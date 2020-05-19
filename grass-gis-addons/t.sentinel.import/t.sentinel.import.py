@@ -17,7 +17,7 @@
 #############################################################################
 
 #%Module
-#% description: downloads and imports the Sentinel-2 scenes and create a STRDS.
+#% description: downloads and imports Sentinel-2 scenes and creates a STRDS.
 #% keyword: temporal
 #% keyword: satellite
 #% keyword: Sentinel
