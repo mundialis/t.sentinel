@@ -280,7 +280,7 @@ def main():
             directory = os.path.join(tmpdirectory, subfolder)
             i_sentinel_import = Module(
             # grass.run_command(
-                'i.sentinel.parallel.import',
+                'i.sentinel.import.worker',
                 input=directory,
                 mapsetid=mapsetid,
                 memory=memory_per_proc,
