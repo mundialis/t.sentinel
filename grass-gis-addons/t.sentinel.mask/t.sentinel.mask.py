@@ -65,8 +65,8 @@
 #% required: no
 #% multiple: no
 #% key_desc: name
-#% label: Name of folder with Sentinel metadata json dumps
-#% description: Default is LOCATION/MAPSET/json
+#% label: Name of folder with Sentinel metadata json files
+#% description: Default is LOCATION/MAPSET/cell_misc/
 #% gisprompt: old,file,file
 #% answer: default
 #% guisection: Metadata
