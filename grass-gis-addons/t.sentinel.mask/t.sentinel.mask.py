@@ -201,8 +201,12 @@ def main():
 
     queue = ParallelModuleQueue(nprocs=options['nprocs'])
     bands = ['B02', 'B03', 'B04', 'B08', 'B8A', 'B11', 'B12']
+    number_of_scenes = len(s2_scenes)
+    number = 0
     for s2_scene_name in s2_scenes:
         s2_scene = s2_scenes[s2_scene_name]
+        number += 1
+        grass.message(_("Processing %d of %d scenes"))
         if threshold > 0:
             with open(s2_scene['metadata'], 'r') as f:
                 data = json.load(f)
