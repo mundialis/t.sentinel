@@ -109,6 +109,7 @@
 
 import atexit
 import os
+import psutil # pip3 install psutil
 import shutil
 import subprocess
 import sys
@@ -139,13 +140,11 @@ def freeRAM(unit, percent=100):
                                                   MB or GB
 
     """
-    # parse 'free' output for RAM/SWAP usage
-    tot_m, used_m, free_m = map(
-        int, os.popen('free -t -m').readlines()[-1].split()[1:])
-    swap_tot_m, swap_used_m, swap_free_m = map(
-        int, os.popen('free -t -m').readlines()[-2].split()[1:])
-    memory_GB = (tot_m - swap_tot_m)/1024
-    memory_MB = (tot_m - swap_tot_m)
+    # use psutil cause of alpine busybox free version for RAM/SWAP usage
+    tot_m = psutil.virtual_memory().total # in Bytes
+    swap_tot_m = psutil.swap_memory().total # in Bytes
+    memory_GB = (tot_m - swap_tot_m)/1024.0/1024.0/1024.0
+    memory_MB = (tot_m - swap_tot_m)/1024.0/1024.0
 
     if unit == "MB":
         memory_MB_percent = memory_MB * percent / 100.0
