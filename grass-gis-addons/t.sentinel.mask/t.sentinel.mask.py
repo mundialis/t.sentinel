@@ -206,7 +206,7 @@ def main():
     for s2_scene_name in s2_scenes:
         s2_scene = s2_scenes[s2_scene_name]
         number += 1
-        grass.message(_("Processing %d of %d scenes"))
+        grass.message(_("Processing %d of %d scenes") % (number, number_of_scenes))
         if threshold > 0:
             with open(s2_scene['metadata'], 'r') as f:
                 data = json.load(f)
