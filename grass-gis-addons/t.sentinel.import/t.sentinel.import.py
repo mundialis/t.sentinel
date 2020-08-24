@@ -176,10 +176,10 @@ def freeRAM(unit, percent=100):
 
     """
     # use psutil cause of alpine busybox free version for RAM/SWAP usage
-    tot_m = psutil.virtual_memory().total # in Bytes
-    swap_tot_m = psutil.swap_memory().total # in Bytes
-    memory_GB = (tot_m - swap_tot_m)/1024.0/1024.0/1024.0
-    memory_MB = (tot_m - swap_tot_m)/1024.0/1024.0
+    mem_available = psutil.virtual_memory().available
+    swap_free = psutil.swap_memory().free
+    memory_GB = (mem_available + swap_free)/1024.0**3
+    memory_MB = (mem_available + swap_free)/1024.0**2
 
     if unit == "MB":
         memory_MB_percent = memory_MB * percent / 100.0
