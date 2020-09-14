@@ -164,7 +164,7 @@ def main():
         parts = strdsrast.split('_')
         name = "%s_%s" % (parts[0],parts[1])
         band = parts[2]
-        if not name in s2_scenes:
+        if name not in s2_scenes:
             s2_scene = {'B02': None, 'B03': None, 'B04': None, 'B08': None,
                 'B8A': None, 'B11': None, 'B12': None, 'date': None}
             s2_scene['clouds'] = "%s_clouds" % name
