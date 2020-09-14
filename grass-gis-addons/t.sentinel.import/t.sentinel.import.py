@@ -273,7 +273,6 @@ def main():
             mapsetids.append(mapsetid)
             directory = os.path.join(tmpdirectory, subfolder)
             i_sentinel_import = Module(
-            # grass.run_command(
                 'i.sentinel.import.worker',
                 input=directory,
                 mapsetid=mapsetid,
@@ -365,7 +364,7 @@ def main():
             bands = pattern.split('|')
 
         for band in bands:
-            if flags['i'] and ( '20' in band or '60' in band ):
+            if flags['i'] and ('20' in band or '60' in band):
                 band.replace('20', '10').replace('60', '10')
             grass.run_command('t.rast.extract', input=strds, where="name like '%" + band + "%'", output="%s_%s" % (strds, band), quiet=True)
             grass.message("<%s_%s> is created" % (strds, band))
