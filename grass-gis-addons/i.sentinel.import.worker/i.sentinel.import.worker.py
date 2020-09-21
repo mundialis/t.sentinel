@@ -153,7 +153,7 @@ def freeRAM(unit, percent=100):
         memory_GB_percent = memory_GB * percent / 100.0
         return int(round(memory_GB_percent))
     else:
-        grass.fatal("Memory unit %s not supported" % unit)
+        grass.fatal("Memory unit <%s> not supported" % unit)
 
 
 def main():
@@ -189,7 +189,7 @@ def main():
     location = env['LOCATION_NAME']
     old_mapset = env['MAPSET']
 
-    grass.message("New mapset: %s" % new_mapset)
+    grass.message("New mapset: <%s>" % new_mapset)
     grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
 
     # create a private GISRC file for each job
@@ -200,7 +200,7 @@ def main():
     os.environ['GISRC'] = newgisrc
 
     # change mapset
-    grass.message("GISRC: %s" % os.environ['GISRC'])
+    grass.message("GISRC: <%s>" % os.environ['GISRC'])
     grass.run_command('g.mapset', flags='c', mapset=new_mapset)
 
     # Test memory settings
@@ -212,7 +212,7 @@ def main():
             % (memory))
 
     # import data
-    grass.message(_("Importing (and reprojecting (as needed)) Sentinel-2 data..."))
+    grass.message(_("Importing (and reprojecting as needed) Sentinel-2 data..."))
     kwargs = {
         'input': input,
         'memory': memory,

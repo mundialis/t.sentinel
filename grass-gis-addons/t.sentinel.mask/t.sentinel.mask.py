@@ -254,7 +254,7 @@ def main():
     location = env['LOCATION_NAME']
     cur_mapset = env['MAPSET']
     if cur_mapset != start_cur_mapset:
-        grass.fatal("New mapset is %s, but should be %s" % (cur_mapset, start_cur_mapset))
+        grass.fatal("New mapset is <%s>, but should be <%s>" % (cur_mapset, start_cur_mapset))
 
     # copy maps to current mapset
     for s2_scene_name in s2_scenes:

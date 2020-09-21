@@ -200,7 +200,7 @@ def main():
     old_mapset = env['MAPSET']
 
     new_mapset = options['newmapset']
-    grass.message("New mapset: %s" % new_mapset)
+    grass.message("New mapset: <%s>" % new_mapset)
     grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
 
     # create a private GISRC file for each job
@@ -211,7 +211,7 @@ def main():
     os.environ['GISRC'] = newgisrc
 
     ### change mapset
-    grass.message("GISRC: %s" % os.environ['GISRC'])
+    grass.message("GISRC: <%s>" % os.environ['GISRC'])
     grass.run_command('g.mapset', flags='c', mapset=new_mapset)
 
     ### import data

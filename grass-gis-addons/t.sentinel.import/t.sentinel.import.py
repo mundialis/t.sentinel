@@ -188,7 +188,7 @@ def freeRAM(unit, percent=100):
         memory_GB_percent = memory_GB * percent / 100.0
         return int(round(memory_GB_percent))
     else:
-        grass.fatal("Memory unit %s not supported" % unit)
+        grass.fatal("Memory unit <%s> not supported" % unit)
 
 
 def main():
@@ -293,7 +293,7 @@ def main():
     location = env['LOCATION_NAME']
     cur_mapset = env['MAPSET']
     if cur_mapset != start_cur_mapset:
-        grass.fatal("New mapset is %s, but should be %s" % (cur_mapset, start_cur_mapset))
+        grass.fatal("New mapset is <%s>, but should be <%s>" % (cur_mapset, start_cur_mapset))
 
     # copy maps to current mapset
     maplist = []
