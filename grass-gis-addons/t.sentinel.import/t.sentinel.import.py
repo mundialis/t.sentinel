@@ -82,14 +82,7 @@
 #% description: Directory to hold temporary files (they can be large)
 #%end
 
-#%option
-#% key: memory
-#% type: integer
-#% required: no
-#% multiple: no
-#% label: Maximum memory to be used (in MB)
-#% description: Cache size for raster rows
-#% answer: 300
+#%option G_OPT_MEMORYMB
 #%end
 
 #%option

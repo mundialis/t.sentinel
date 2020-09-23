@@ -61,14 +61,7 @@
 #% description: Set current region from named region
 #%end
 
-#%option
-#% key: memory
-#% type: integer
-#% required: no
-#% multiple: no
-#% label: Maximum memory to be used (in MB)
-#% description: Memory which is used by all processes
-#% answer: 1000
+#%option G_OPT_MEMORYMB
 #%end
 
 #%option
