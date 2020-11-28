@@ -4,7 +4,7 @@
 #
 # MODULE:       t.sentinel.mask
 #
-# AUTHOR(S):    Anika Bettge <bettge at mundialis.de>
+# AUTHOR(S):    Anika Weinmann <weinmann at mundialis.de>
 #
 # PURPOSE:      Creates a space time raster data set of cloud masks and shadow
 #               masks by using i.sentinel.mask
