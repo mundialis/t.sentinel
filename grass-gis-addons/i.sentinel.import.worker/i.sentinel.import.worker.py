@@ -2,7 +2,7 @@
 ############################################################################
 #
 # MODULE:       i.sentinel.import.worker
-# AUTHOR(S):    Guido Riembauer and Anika Bettge
+# AUTHOR(S):    Guido Riembauer and Anika Weinmann
 #
 # PURPOSE:      Imports Sentinel-2 data in a new mapset, and optionally resamples to 10m.
 # COPYRIGHT:    (C) 2019-2020 by mundialis and the GRASS Development Team

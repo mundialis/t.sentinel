@@ -3,7 +3,7 @@
 ############################################################################
 #
 # MODULE:       i.sentinel.mask.worker
-# AUTHOR(S):    Anika Bettge
+# AUTHOR(S):    Anika Weinmann
 # PURPOSE:      This is a worker addon to run i.sentinel.mask in different mapsets
 # COPYRIGHT: (C) 2019 by mundialis and the GRASS Development Team
 #

@@ -4,7 +4,7 @@
 #
 # MODULE:       t.sentinel.import
 #
-# AUTHOR(S):    Anika Bettge <bettge at mundialis.de>
+# AUTHOR(S):    Anika Weinmann <bettge at mundialis.de>
 #
 # PURPOSE:      Downloads and imports the Sentinel-2 scenes and create a STRDS
 #

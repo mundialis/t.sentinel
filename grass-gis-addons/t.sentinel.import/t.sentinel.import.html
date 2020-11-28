@@ -5,7 +5,8 @@ download and import the Sentinel-2 scenes and create a STRDS.
 
 <h2>EXAMPLE</h2>
 <div class="code"><pre>
-t.sentinel.import s2names=s2names2.txt settings=/mnt/pgpass/.sentinel.txt nprocs=7 memory=8000 -c pattern='B0(4|8)_10m' strds_output=test
+t.sentinel.import s2names=s2names2.txt settings=/mnt/pgpass/.sentinel.txt \
+  nprocs=7 memory=8000 -c pattern='B0(4|8)_10m' strds_output=test
 </pre></div>
 
 <h2>SEE ALSO</h2>
@@ -19,9 +20,9 @@ t.sentinel.import s2names=s2names2.txt settings=/mnt/pgpass/.sentinel.txt nprocs
 <a href="t.register.html">t.register</a>
 </em>
 
-<h2>AUTHORS</h2>
+<h2>AUTHOR</h2>
 
-Anika Bettge, mundialis, bettge at mundialis.de
+Anika Weinmann, mundialis, weinmann at mundialis.de
 
 
 <!--
