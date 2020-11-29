@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>GRASS GIS manual: t.sentinel toolset</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="grassdocs.css" type="text/css">
+</head>
+<body bgcolor="white">
+<div id="container">
+
+<a href="https://grass.osgeo.org/grass-stable/manuals/index.html"><img src="grass_logo.png" alt="GRASS logo"></a>
+<hr class="header">
+
+<h2>NAME</h2>
+
+<em><b>t.sentinel</b></em> - Toolset for download and processing time
+series of Copernicus Sentinel products. This toolset is an addition to
+the <a href="https://grass.osgeo.org/grass7/manuals/addons/i.sentinel.html">i.sentinel</a>
+toolset.
+
+
+<h2>KEYWORDS</h2>
+<a href="https://grass.osgeo.org/grass-stable/manuals/raster.html">imagery</a>, <a href="https://grass.osgeo.org/grass-stable/manuals/topic_import.html">import</a>, <a href="keywords.html#satellite">satellite</a>, <a href="keywords.html#Sentinel">Sentinel</a>
+
+<!-- meta page description: Toolset for download and processing time series of Sentinel products -->
+<h2>DESCRIPTION</h2>
+
+The <em>t.sentinel</em> toolset consists of currently four modules.
+<p>
+<i>Helper modules:</i>
+
+<dl>
+  <dt><a href="i.sentinel.import.worker.html">i.sentinel.import.worker</a></dt>
+  <dd>imports Sentinel-2 data into a new mapset, and optionally resamples bands
+      to 10m, usually called by <b>t.sentinel.import</b></dd>
+  <dt><a href="i.sentinel.mask.worker.html">i.sentinel.mask.worker</a></dt>
+  <dd>runs <b>i.sentinel.mask</b> as a worker in different mapsets, usually
+      called by <b>t.sentinel.mask</b></dd>
+</dl>
+<p>
+
+<i>Processing modules:</i>
+<dl>
+  <dt><a href="t.sentinel.import.html">t.sentinel.import</a></dt>
+  <dd>downloads and imports multiple Sentinel-2 scenes in parallel and creates a STRDS</dd>
+  <dt><a href="t.sentinel.mask.html">t.sentinel.mask</a></dt>
+  <dd>creates a space time raster data set of cloud masks and shadow masks by running
+      <b>i.sentinel.mask</b> parallelized</dd>
+</dl>
+
+<h2>REQUIREMENTS</h2>
+
+<ul>
+  <li><a href="https://pypi.python.org/pypi/psutil">psutil library</a></li>
+</ul>
+
+<h2>AUTHORS</h2>
+
+Anika Weinmann and Guido Riembauer, <a href="https://www.mundialis.de/">mundialis</a>
+
+
+<!--
+<p>
+<i>Last changed: $Date$</i>
+-->
+
