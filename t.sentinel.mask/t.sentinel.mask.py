@@ -9,7 +9,7 @@
 # PURPOSE:      Creates a space time raster data set of cloud masks and shadow
 #               masks by running i.sentinel.mask parallelized
 #
-# COPYRIGHT:	(C) 2020 by mundialis and the GRASS Development Team
+# COPYRIGHT:	(C) 2020-2021 by mundialis and the GRASS Development Team
 #
 #		This program is free software under the GNU General Public
 #		License (>=v2). Read the file COPYING that comes with GRASS
@@ -54,7 +54,7 @@
 #%option
 #% key: min_size_clouds
 #% type: double
-#% required: yes
+#% required: no
 #% multiple: no
 #% description: Value option that sets the minimal area size limit (in hectares) of the clouds
 #%end
@@ -70,7 +70,7 @@
 #%option
 #% key: min_size_shadows
 #% type: double
-#% required: yes
+#% required: no
 #% multiple: no
 #% description: Value option that sets the minimal area size limit (in hectares) of the clouds
 #%end
@@ -299,7 +299,7 @@ def main():
                         value=options['min_size_shadows'],
                         mode='greater',
                         quiet=True)
-                else
+                else:
                     grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['shadows'], newmapset, s2_scene['shadows']))
             else:
                 grass.run_command('r.mapcalc', expression="%s = null()" % s2_scene['shadows'])
