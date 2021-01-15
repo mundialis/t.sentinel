@@ -229,7 +229,7 @@ def main():
     grass.run_command(
         'i.sentinel.parallel.download',
         settings=options['settings'],
-        scene_name=s2namesstr,
+        scene_name=s2namesstr.strip(),
         nprocs=options['nprocs'],
         output=tmpdirectory,
         flags="fs",

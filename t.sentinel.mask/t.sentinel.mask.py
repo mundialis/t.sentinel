@@ -9,7 +9,7 @@
 # PURPOSE:      Creates a space time raster data set of cloud masks and shadow
 #               masks by running i.sentinel.mask parallelized
 #
-# COPYRIGHT:	(C) 2020 by mundialis and the GRASS Development Team
+# COPYRIGHT:	(C) 2020-2021 by mundialis and the GRASS Development Team
 #
 #		This program is free software under the GNU General Public
 #		License (>=v2). Read the file COPYING that comes with GRASS
@@ -52,11 +52,27 @@
 #%end
 
 #%option
+#% key: min_size_clouds
+#% type: double
+#% required: no
+#% multiple: no
+#% description: Value option that sets the minimal area size limit (in hectares) of the clouds
+#%end
+
+#%option
 #% key: output_shadows
 #% type: string
 #% required: no
 #% multiple: no
 #% description: STRDS with shodow masks of Sentinel-2 scenes
+#%end
+
+#%option
+#% key: min_size_shadows
+#% type: double
+#% required: no
+#% multiple: no
+#% description: Value option that sets the minimal area size limit (in hectares) of the cloud shadows
 #%end
 
 #%option
@@ -261,12 +277,30 @@ def main():
         s2_scene = s2_scenes[s2_scene_name]
         newmapset = s2_scene['clouds']
         if grass.find_file(s2_scene['clouds'], element = 'raster',mapset = newmapset)['file']:
-            grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['clouds'], newmapset, s2_scene['clouds']))
+            if options['min_size_clouds']:
+                grass.run_command(
+                    'r.reclass.area',
+                    input="%s@%s" % (s2_scene['clouds'], newmapset),
+                    output=s2_scene['clouds'],
+                    value=options['min_size_clouds'],
+                    mode='greater',
+                    quiet=True)
+            else:
+                grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['clouds'], newmapset, s2_scene['clouds']))
         else:
             grass.run_command('r.mapcalc', expression="%s = null()" % s2_scene['clouds'])
         if options['output_shadows']:
             if grass.find_file(s2_scene['shadows'], element = 'raster',mapset = newmapset)['file']:
-                grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['shadows'], newmapset, s2_scene['shadows']))
+                if options['min_size_shadows']:
+                    grass.run_command(
+                        'r.reclass.area',
+                        input="%s@%s" % (s2_scene['shadows'], newmapset),
+                        output=s2_scene['shadows'],
+                        value=options['min_size_shadows'],
+                        mode='greater',
+                        quiet=True)
+                else:
+                    grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['shadows'], newmapset, s2_scene['shadows']))
             else:
                 grass.run_command('r.mapcalc', expression="%s = null()" % s2_scene['shadows'])
         grass.utils.try_rmdir(os.path.join(gisdbase, location, newmapset))
