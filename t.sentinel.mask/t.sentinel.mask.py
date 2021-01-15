@@ -72,7 +72,7 @@
 #% type: double
 #% required: no
 #% multiple: no
-#% description: Value option that sets the minimal area size limit (in hectares) of the clouds
+#% description: Value option that sets the minimal area size limit (in hectares) of the cloud shadows
 #%end
 
 #%option
