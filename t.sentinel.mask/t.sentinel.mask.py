@@ -276,29 +276,43 @@ def main():
     for s2_scene_name in s2_scenes:
         s2_scene = s2_scenes[s2_scene_name]
         newmapset = s2_scene['clouds']
-        if grass.find_file(s2_scene['clouds'], element = 'raster',mapset = newmapset)['file']:
+        if grass.find_file(s2_scene['clouds'], element='raster',mapset=newmapset)['file']:
             if options['min_size_clouds']:
-                grass.run_command(
-                    'r.reclass.area',
-                    input="%s@%s" % (s2_scene['clouds'], newmapset),
-                    output=s2_scene['clouds'],
-                    value=options['min_size_clouds'],
-                    mode='greater',
-                    quiet=True)
+                try:
+                    grass.run_command(
+                        'r.reclass.area',
+                        input="%s@%s" % (s2_scene['clouds'], newmapset),
+                        output=s2_scene['clouds'],
+                        value=options['min_size_clouds'],
+                        mode='greater',
+                        quiet=True)
+                except Exception as e:
+                    # todo: remove workaround once r.reclass.area is updated
+                    grass.message(_('No clouds larger than %s detected. Image is considered cloudfree.'))
+                    exp_null = '%s = null()' % s2_scene['clouds']
+                    grass.run_command('r.mapcalc', expression=exp_null,
+                                      quiet=True)
             else:
                 grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['clouds'], newmapset, s2_scene['clouds']))
         else:
             grass.run_command('r.mapcalc', expression="%s = null()" % s2_scene['clouds'])
         if options['output_shadows']:
-            if grass.find_file(s2_scene['shadows'], element = 'raster',mapset = newmapset)['file']:
+            if grass.find_file(s2_scene['shadows'], element='raster',mapset=newmapset)['file']:
                 if options['min_size_shadows']:
-                    grass.run_command(
-                        'r.reclass.area',
-                        input="%s@%s" % (s2_scene['shadows'], newmapset),
-                        output=s2_scene['shadows'],
-                        value=options['min_size_shadows'],
-                        mode='greater',
-                        quiet=True)
+                    try:
+                        grass.run_command(
+                            'r.reclass.area',
+                            input="%s@%s" % (s2_scene['shadows'], newmapset),
+                            output=s2_scene['shadows'],
+                            value=options['min_size_shadows'],
+                            mode='greater',
+                            quiet=True)
+                    except Exception as e:
+                        # todo: remove workaround once r.reclass.area is updated
+                        grass.message(_('No shadows larger than %s detected. Image is considered shadowfree.'))
+                        exp_null = '%s = null()' % s2_scene['shadows']
+                        grass.run_command('r.mapcalc', expression=exp_null,
+                                          quiet=True)
                 else:
                     grass.run_command('g.copy', raster="%s@%s,%s" % (s2_scene['shadows'], newmapset, s2_scene['shadows']))
             else:
