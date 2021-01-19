@@ -288,7 +288,7 @@ def main():
                         quiet=True)
                 except Exception as e:
                     # todo: remove workaround once r.reclass.area is updated
-                    grass.message(_('No clouds larger than %s detected. Image is considered cloudfree.'))
+                    grass.message(_('No clouds larger than %s ha detected. Image is considered cloudfree.' % options['min_size_clouds']))
                     exp_null = '%s = null()' % s2_scene['clouds']
                     grass.run_command('r.mapcalc', expression=exp_null,
                                       quiet=True)
@@ -309,7 +309,7 @@ def main():
                             quiet=True)
                     except Exception as e:
                         # todo: remove workaround once r.reclass.area is updated
-                        grass.message(_('No shadows larger than %s detected. Image is considered shadowfree.'))
+                        grass.message(_('No shadows larger than %s ha detected. Image is considered shadowfree.' % options['min_size_shadows']))
                         exp_null = '%s = null()' % s2_scene['shadows']
                         grass.run_command('r.mapcalc', expression=exp_null,
                                           quiet=True)
