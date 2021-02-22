@@ -43,17 +43,86 @@
 #% guisection: Settings
 #%end
 
+#%flag
+#% key: e
+#% description: Use ESA-style scenename/s to download from USGS
+#%end
+
+#%flag
+#% key: a
+#% description: run atmospherical correction with sen2cor before importing
+#%end
+
 #%option G_OPT_F_INPUT
 #% key: settings
+#% required: yes
 #% label: Full path to settings file (user, password)
+#%end
+
+#%option
+#% key: clouds
+#% type: integer
+#% description: Maximum cloud cover percentage for Sentinel scene
+#% required: no
+#% guisection: Filter
+#% answer: 20
+#%end
+
+#%option
+#% key: producttype
+#% type: string
+#% description: Sentinel product type to filter
+#% required: no
+#% options: S2MSI1C,S2MSI2A,S2MSI2Ap
+#% answer: S2MSI2A
+#% guisection: Filter
+#%end
+
+#%option
+#% key: start
+#% type: string
+#% description: Start date ('YYYY-MM-DD')
+#% guisection: Filter
+#%end
+
+#%option
+#% key: end
+#% type: string
+#% description: End date ('YYYY-MM-DD')
+#% guisection: Filter
+#%end
+
+#%option
+#% key: datasource
+#% description: Data-Hub to download scenes from.
+#% label: Default is ESA Copernicus Open Access Hub (ESA_COAH), but Sentinel-2 L1C data can also be acquired from USGS Earth Explorer (USGS_EE). Download from USGS is currently only available when used together with the scene_name option.
+#% options: ESA_COAH,USGS_EE
+#% answer: ESA_COAH
+#% guisection: Filter
+#%end
+
+#%option
+#% key: limit
+#% type: integer
+#% description: Maximum number of scenes to filter/download
+#% required: no
+#% guisection: Filter
 #%end
 
 #%option
 #% key: s2names
 #% type: string
-#% required: yes
+#% required: no
 #% multiple: yes
 #% description: List of Sentinel-2 names or file with this list
+#%end
+
+#%option
+#% key: sen2cor_path
+#% required: yes
+#% type: string
+#% label: path to sen2cor home directory
+#% description: e.g. /home/user/sen2cor
 #%end
 
 #%option
@@ -93,6 +162,13 @@
 #% multiple: no
 #% label: Number of parallel processes to use
 #% answer: 1
+#%end
+
+#%rules
+#% collective: start, end, producttype
+#% excludes: s2names, start, end, producttype
+#% requires: -a, sen2cor_path
+#% requires: -e, s2names
 #%end
 
 
@@ -143,9 +219,10 @@ def test_nprocs_memory():
     nprocs = int(options['nprocs'])
     nprocs_real = mp.cpu_count()
     if nprocs > nprocs_real:
-        grass.warning(
-            "Using %d parallel processes but only %d CPUs available."
-            % (nprocs, nprocs_real))
+        grass.warning(_(
+            "Using {} parallel processes but only {} CPUs available. "
+            "Setting nprocs to {}.").format(nprocs, nprocs_real, nprocs_real))
+        options['nprocs'] = nprocs_real
     # check momory
     memory = int(options['memory'])
     free_ram = abs(freeRAM('MB', 100))
@@ -190,12 +267,18 @@ def main():
     global rm_regions, rm_rasters, rm_vectors, tmpfolder
 
     # parameters
-    s2names = options['s2names'].split(',')
+    if options['s2names']:
+        s2names = options['s2names'].split(',')
+        if os.path.isfile(s2names[0]):
+            with open(s2names[0], 'r') as f:
+                s2namesstr = f.read()
+        else:
+            s2namesstr = ','.join(s2names)
     tmpdirectory = options['directory']
 
     test_nprocs_memory()
 
-    grass.message(_("Downloading Sentinel scenes ..."))
+
     if not grass.find_program('i.sentinel.download', '--help'):
         grass.fatal(_("The 'i.sentinel.download' module was not found, install it first:") +
                     "\n" +
@@ -216,42 +299,90 @@ def main():
                 os.makedirs(tmpdirectory)
             except:
                 grass.fatal(_("Unable to create temp dir"))
+
     else:
         tmpdirectory = grass.tempdir()
         tmpfolder = tmpdirectory
 
-    if os.path.isfile(s2names[0]):
-        with open(s2names[0], 'r') as f:
-            s2namesstr = f.read()
-    else:
-        s2namesstr = ','.join(s2names)
+    # make distinct download and sen2cor directories
+    try:
+        download_dir = os.path.join(tmpdirectory, 'download_{}'.format(
+            os.getpid()))
+        os.makedirs(download_dir)
+    except Exception as e:
+        grass.fatal(_('Unable to create temp dir {}').format(download_dir))
 
-    grass.run_command(
-        'i.sentinel.parallel.download',
-        settings=options['settings'],
-        scene_name=s2namesstr.strip(),
-        nprocs=options['nprocs'],
-        output=tmpdirectory,
-        flags="fs",
-        quiet=True)
+    download_args = {
+        'settings': options['settings'],
+        'nprocs': options['nprocs'],
+        'output': download_dir,
+        'datasource': options['datasource'],
+        'flags': 'f'
+    }
+    if options['limit']:
+        download_args['limit'] = options['limit']
+    if options['s2names']:
+        download_args['flags'] += 's'
+        download_args['scene_name'] = s2namesstr.strip()
+        if options['datasource'] == 'USGS_EE':
+            if flags['e']:
+                download_args['flags'] += 'e'
+            download_args['producttype'] = 'S2MSI1C'
+    else:
+        download_args['clouds'] = options['clouds']
+        download_args['start'] = options['start']
+        download_args['end'] = options['end']
+        download_args['producttype'] = options['producttype']
+
+    grass.run_command('i.sentinel.parallel.download',
+                      **download_args)
+    number_of_scenes = len(os.listdir(download_dir))
+    nprocs_final = min(number_of_scenes, int(options['nprocs']))
+
+    # run atmospherical correction
+    if flags['a']:
+        sen2cor_folder = os.path.join(tmpdirectory, 'sen2cor_{}'.format(
+            os.getpid()))
+        try:
+            os.makedirs(sen2cor_folder)
+        except Exception as e:
+            grass.fatal(_(
+                "Unable to create temporary sen2cor folder {}").format(
+                sen2cor_folder))
+        grass.message(_('Starting atmospherical correction with sen2cor...').format(nprocs_final))
+        queue_sen2cor = ParallelModuleQueue(nprocs=nprocs_final)
+        for idx, subfolder in enumerate(os.listdir(download_dir)):
+            folderpath = os.path.join(download_dir, subfolder)
+            for file in os.listdir(folderpath):
+                if file.endswith('.SAFE'):
+                    filepath = os.path.join(folderpath, file)
+            output_dir = os.path.join(
+                sen2cor_folder, 'sen2cor_result_{}'.format(idx))
+            sen2cor_module = Module(
+                'i.sentinel-2.sen2cor',
+                input_file=filepath,
+                output_dir=output_dir,
+                sen2cor_path=options['sen2cor_path'],
+                nprocs=1,
+                run_=False
+                # all remaining sen2cor parameters can be left as default
+            )
+            queue_sen2cor.put(sen2cor_module)
+        queue_sen2cor.wait()
+        download_dir = sen2cor_folder
 
     grass.message(_("Importing Sentinel scenes ..."))
     env = grass.gisenv()
     start_gisdbase = env['GISDBASE']
     start_location = env['LOCATION_NAME']
     start_cur_mapset = env['MAPSET']
-
-    if len(s2namesstr.split(',')) < int(options['nprocs']):
-        procs_import = len(s2namesstr.split(','))
-    else:
-        procs_import = int(options['nprocs'])
     ### save current region
     id = str(os.getpid())
     currentregion = 'tmp_region_' + id
     grass.run_command('g.region', save=currentregion, flags='p')
 
-    queue_import = ParallelModuleQueue(nprocs=procs_import)
-    memory_per_proc = round(float(options['memory'])/procs_import)
+    queue_import = ParallelModuleQueue(nprocs=nprocs_final)
+    memory_per_proc = round(float(options['memory'])/nprocs_final)
     mapsetids = []
     importflag = 'r'
     if flags['i']:
@@ -261,11 +392,13 @@ def main():
     json_standard_folder = os.path.join(env['GISDBASE'], env['LOCATION_NAME'], env['MAPSET'], 'cell_misc')
     if not os.path.isdir(json_standard_folder):
         os.makedirs(json_standard_folder)
-    for idx,subfolder in enumerate(os.listdir(tmpdirectory)):
-        if os.path.isdir(os.path.join(tmpdirectory, subfolder)):
+    subfolders = []
+    for idx, subfolder in enumerate(os.listdir(download_dir)):
+        if os.path.isdir(os.path.join(download_dir, subfolder)):
+            subfolders.append(subfolder)
             mapsetid = 'S2_import_%s' %(str(idx+1))
             mapsetids.append(mapsetid)
-            directory = os.path.join(tmpdirectory, subfolder)
+            directory = os.path.join(download_dir, subfolder)
             i_sentinel_import = Module(
                 'i.sentinel.import.worker',
                 input=directory,
@@ -280,7 +413,6 @@ def main():
             queue_import.put(i_sentinel_import)
     queue_import.wait()
     grass.run_command('g.remove', type='region', name=currentregion, flags='f')
-
     # verify that switching the mapset worked
     env = grass.gisenv()
     gisdbase = env['GISDBASE']
@@ -288,7 +420,6 @@ def main():
     cur_mapset = env['MAPSET']
     if cur_mapset != start_cur_mapset:
         grass.fatal("New mapset is <%s>, but should be <%s>" % (cur_mapset, start_cur_mapset))
-
     # copy maps to current mapset
     maplist = []
     cloudlist = []
@@ -302,7 +433,6 @@ def main():
             # set nulls
             grass.run_command('i.zero2null', map=rast, quiet=True)
         grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
-
     # space time dataset
     grass.message(_("Creating STRDS of Sentinel scenes ..."))
     if options['strds_output']:
