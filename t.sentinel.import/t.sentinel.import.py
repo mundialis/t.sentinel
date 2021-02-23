@@ -208,6 +208,10 @@ def main():
         grass.fatal(_("The 'i.sentinel.parallel.download' module was not found, install it first:") +
                     "\n" +
                     "g.extension i.sentinel")
+    if not grass.find_program('i.zero2null', '--help'):
+        grass.fatal(_("The 'i.zero2null' module was not found, install it first:") +
+                    "\n" +
+                    "g.extension i.zero2null")
 
     # create temporary directory to download data
     if tmpdirectory:
