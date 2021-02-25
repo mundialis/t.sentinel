@@ -71,7 +71,7 @@
 #%option
 #% key: producttype
 #% type: string
-#% description: Sentinel product type to filter
+#% description: Sentinel-2 product type to filter
 #% required: no
 #% options: S2MSI1C,S2MSI2A,S2MSI2Ap
 #% answer: S2MSI2A
