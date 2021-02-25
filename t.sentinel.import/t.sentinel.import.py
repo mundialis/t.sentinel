@@ -121,7 +121,7 @@
 #% key: sen2cor_path
 #% required: no
 #% type: string
-#% label: path to sen2cor home directory
+#% label: Path to sen2cor home directory
 #% description: e.g. /home/user/sen2cor
 #%end
 
