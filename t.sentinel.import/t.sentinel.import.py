@@ -50,7 +50,7 @@
 
 #%flag
 #% key: a
-#% description: run atmospherical correction with sen2cor before importing
+#% description: run atmospheric correction with sen2cor before importing
 #%end
 
 #%option G_OPT_F_INPUT
@@ -65,7 +65,7 @@
 #% description: Maximum cloud cover percentage for Sentinel scene
 #% required: no
 #% guisection: Filter
-#% answer: 20
+#% answer: 100
 #%end
 
 #%option
@@ -119,7 +119,7 @@
 
 #%option
 #% key: sen2cor_path
-#% required: yes
+#% required: no
 #% type: string
 #% label: path to sen2cor home directory
 #% description: e.g. /home/user/sen2cor
@@ -339,7 +339,7 @@ def main():
     number_of_scenes = len(os.listdir(download_dir))
     nprocs_final = min(number_of_scenes, int(options['nprocs']))
 
-    # run atmospherical correction
+    # run atmospheric correction
     if flags['a']:
         sen2cor_folder = os.path.join(tmpdirectory, 'sen2cor_{}'.format(
             os.getpid()))
@@ -349,7 +349,7 @@ def main():
             grass.fatal(_(
                 "Unable to create temporary sen2cor folder {}").format(
                 sen2cor_folder))
-        grass.message(_('Starting atmospherical correction with sen2cor...').format(nprocs_final))
+        grass.message(_('Starting atmospheric correction with sen2cor...').format(nprocs_final))
         queue_sen2cor = ParallelModuleQueue(nprocs=nprocs_final)
         for idx, subfolder in enumerate(os.listdir(download_dir)):
             folderpath = os.path.join(download_dir, subfolder)
