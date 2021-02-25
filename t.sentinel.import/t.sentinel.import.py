@@ -50,7 +50,7 @@
 
 #%flag
 #% key: a
-#% description: run atmospheric correction with sen2cor before importing
+#% description: Run atmospheric correction with sen2cor before importing
 #%end
 
 #%option G_OPT_F_INPUT
