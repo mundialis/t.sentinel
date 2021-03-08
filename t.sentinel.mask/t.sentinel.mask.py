@@ -319,6 +319,47 @@ def main():
                 grass.run_command('r.mapcalc', expression="%s = null()" % s2_scene['shadows'])
         grass.utils.try_rmdir(os.path.join(gisdbase, location, newmapset))
 
+    # patch together clouds (and shadows) if they have the same date
+    all_dates = []
+    dates_scenes = []
+    for s2_scene in s2_scenes:
+        all_dates.append(s2_scenes[s2_scene]['date'])
+    unique_dates = list(set(all_dates))
+    for date in unique_dates:
+        tempdict = {}
+        tempdict['date'] = date
+        scenelist = []
+        cloudlist = []
+        shadowlist = []
+        for s2_scene in s2_scenes:
+            if s2_scenes[s2_scene]['date'] == date:
+                scenelist.append(s2_scene)
+                cloudlist.append(s2_scenes[s2_scene]['clouds'])
+                if options['output_shadows']:
+                    shadowlist.append(s2_scenes[s2_scene]['shadows'])
+        tempdict['scenes'] = scenelist
+        tempdict['clouds'] = cloudlist
+        tempdict['shadows'] = shadowlist
+        dates_scenes.append(tempdict)
+
+    for date_scenes in dates_scenes:
+        if len(date_scenes['scenes']) > 1:
+            cloud_patch = 'clouds_patched_{}'.format(
+                date_scenes['date'].strftime('%Y%m%d'))
+            rm_rasters.extend(date_scenes['clouds'])
+            grass.run_command('r.patch', input=date_scenes['clouds'],
+                              output=cloud_patch, quiet=True)
+            if options['output_shadows']:
+                shadow_patch = 'shadows_patched_{}'.format(
+                    date_scenes['date'].strftime('%Y%m%d'))
+                rm_rasters.extend(date_scenes['shadows'])
+                grass.run_command('r.patch', input=date_scenes['shadows'],
+                                  output=shadow_patch, quiet=True)
+            for scene in date_scenes['scenes']:
+                s2_scenes[scene]['clouds'] = cloud_patch
+                if options['output_shadows']:
+                    s2_scenes[scene]['shadows'] = shadow_patch
+
     grass.message(_("Create space time raster data set of clouds ..."))
     grass.run_command(
         't.create', output=strdsout, title="Sentinel-2 cloud mask",
@@ -326,9 +367,14 @@ def main():
     # create register file
     registerfile = grass.tempfile()
     file = open(registerfile, 'w')
+    clouds_registered = []
     for s2_scene_name in s2_scenes:
         s2_scene = s2_scenes[s2_scene_name]
-        file.write("%s|%s\n" % (s2_scene['clouds'], s2_scene['date'].strftime("%Y-%m-%d %H:%M:%S")))
+        clouds = s2_scene['clouds']
+        if clouds not in clouds_registered:
+            file.write("%s|%s\n" % (clouds, s2_scene['date'].strftime(
+                "%Y-%m-%d %H:%M:%S")))
+            clouds_registered.append(clouds)
     file.close()
     grass.run_command('t.register', input=strdsout, file=registerfile, quiet=True)
     # remove registerfile
@@ -342,9 +388,14 @@ def main():
         # create register file
         registerfile = grass.tempfile()
         file = open(registerfile, 'w')
+        shadows_registered = []
         for s2_scene_name in s2_scenes:
             s2_scene = s2_scenes[s2_scene_name]
-            file.write("%s|%s\n" % (s2_scene['shadows'], s2_scene['date'].strftime("%Y-%m-%d %H:%M:%S")))
+            shadows = s2_scene['shadows']
+            if shadows not in shadows_registered:
+                file.write("%s|%s\n" % (shadows, s2_scene['date'].strftime(
+                    "%Y-%m-%d %H:%M:%S")))
+                shadows_registered.append(shadows)
         file.close()
         grass.run_command('t.register', input=options['output_shadows'], file=registerfile, quiet=True)
         # remove registerfile
