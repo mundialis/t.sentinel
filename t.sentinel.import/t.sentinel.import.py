@@ -309,12 +309,12 @@ def main():
         tmpfolder = tmpdirectory
 
     # make distinct download and sen2cor directories
-    try:
-        download_dir = os.path.join(tmpdirectory, 'download_{}'.format(
-            os.getpid()))
-        os.makedirs(download_dir)
-    except Exception as e:
-        grass.fatal(_('Unable to create temp dir {}').format(download_dir))
+    download_dir = os.path.join(tmpdirectory, 'download_tsentinel')
+    if not os.path.exists(download_dir):
+        try:
+            os.makedirs(download_dir)
+        except Exception as e:
+            grass.fatal(_('Unable to create temp dir {}').format(download_dir))
 
     download_args = {
         'settings': options['settings'],
@@ -338,21 +338,38 @@ def main():
         download_args['end'] = options['end']
         download_args['producttype'] = options['producttype']
 
-    grass.run_command('i.sentinel.parallel.download',
-                      **download_args)
+    skip_download = False
+    if options['datasource'] == 'ESA_COAH':
+        subdirs = [f for f in os.listdir(download_dir) if
+                   os.path.isdir(os.path.join(download_dir, f))]
+        files_complete = []
+        if len(subdirs) > 0:
+            for subdir in subdirs:
+                subdir_path = os.path.join(download_dir, subdir)
+                for file in os.listdir(subdir_path):
+                    if file.endswith('.zip'):
+                        files_complete.append(file)
+            if len(subdirs) == len(files_complete):
+                grass.warning(_('Data has been downloaded already. '
+                                'Skipping download...'))
+                skip_download = True
+    if not skip_download:
+        grass.run_command('i.sentinel.parallel.download',
+                          **download_args)
+
     number_of_scenes = len(os.listdir(download_dir))
     nprocs_final = min(number_of_scenes, int(options['nprocs']))
 
     # run atmospheric correction
     if flags['a']:
-        sen2cor_folder = os.path.join(tmpdirectory, 'sen2cor_{}'.format(
-            os.getpid()))
-        try:
-            os.makedirs(sen2cor_folder)
-        except Exception as e:
-            grass.fatal(_(
-                "Unable to create temporary sen2cor folder {}").format(
-                sen2cor_folder))
+        sen2cor_folder = os.path.join(tmpdirectory, 'sen2cor_tsentinel')
+        if not os.path.exists(sen2cor_folder):
+            try:
+                os.makedirs(sen2cor_folder)
+            except Exception as e:
+                grass.fatal(_(
+                    "Unable to create temporary sen2cor folder {}").format(
+                    sen2cor_folder))
         grass.message(_('Starting atmospheric correction with sen2cor...').format(nprocs_final))
         queue_sen2cor = ParallelModuleQueue(nprocs=nprocs_final)
         for idx, subfolder in enumerate(os.listdir(download_dir)):
