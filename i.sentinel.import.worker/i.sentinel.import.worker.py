@@ -242,7 +242,11 @@ def main():
     resp = cmd.communicate()
     for resp_line in resp:
         if 'Input raster does not overlap current computational region' in resp_line.decode("utf-8"):
-            grass.warning(_("Input raster <%s> does not overlap current computational region") % options['input'])
+            if options["pattern_file"]:
+                raster_var = options["pattern_file"]
+            else:
+                raster_var = options["input"]
+            grass.warning(_("Input raster <%s> does not overlap current computational region") % raster_var)
 
     # resampling
     if flags['i']:

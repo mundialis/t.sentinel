@@ -160,8 +160,8 @@
 #% type: string
 #% required: no
 #% multiple: no
-#% label: Directory with locally stored S2-data. If this option if used, no downloading will be performed
-#% description: If this option if used, no downloading will be performed
+#% label: Directory with locally stored S2-data. If this option is used, no downloading will be performed
+#% description: If this option is used, no downloading will be performed.
 #%end
 
 #%option G_OPT_MEMORYMB
@@ -429,8 +429,7 @@ def main():
     if not os.path.isdir(json_standard_folder):
         os.makedirs(json_standard_folder)
     for idx, subfolder in enumerate(os.listdir(download_dir)):
-        if (os.path.isdir(os.path.join(download_dir, subfolder))
-                and subfolder.endswith(".SAFE")):
+        if os.path.isdir(os.path.join(download_dir, subfolder)):
             mapsetid = 'S2_import_%s' % (str(idx+1))
             mapsetids.append(mapsetid)
             import_kwargs = {
@@ -445,7 +444,15 @@ def main():
                 directory = os.path.join(download_dir, subfolder)
             else:
                 directory = download_dir
-                pattern_file = subfolder.split(".SAFE")[0]
+                if subfolder.endswith(".SAFE"):
+                    pattern_file = subfolder.split(".SAFE")[0]
+                elif subfolder.endswith(".zip"):
+                    pattern_file = subfolder.split(".zip")[0]
+                else:
+                    grass.warning(_("{} is not in .SAFE or .zip format, "
+                                    "skipping...").format(
+                                    os.path.join(download_dir, subfolder)))
+                    continue
                 import_kwargs["pattern_file"] = pattern_file
             import_kwargs["input"] = directory
             i_sentinel_import = Module(
