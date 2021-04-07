@@ -48,6 +48,14 @@
 #%end
 
 #%option
+#% key: pattern_file
+#% type: string
+#% required: no
+#% multiple: no
+#% description: File name pattern to import
+#%end
+
+#%option
 #% key: mapsetid
 #% type: string
 #% required: yes
@@ -220,6 +228,8 @@ def main():
         kwargs['extent'] = 'region'
     if options['metadata']:
         kwargs['metadata'] = options['metadata']
+    if options["pattern_file"]:
+        kwargs["pattern_file"] = options["pattern_file"]
 
     kwargsstr = ""
     flagstr = ""
