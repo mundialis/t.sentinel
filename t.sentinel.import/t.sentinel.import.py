@@ -417,7 +417,7 @@ def main():
     queue_import = ParallelModuleQueue(nprocs=nprocs_final)
     memory_per_proc = round(float(options['memory'])/nprocs_final)
     mapsetids = []
-    importflag = 'r'
+    importflag = 'rn'
     if flags['i']:
         importflag += 'i'
     if flags['c']:
@@ -478,8 +478,6 @@ def main():
         for rast in grass.parse_command('g.list', type='raster', mapset=new_mapset):
             maplist.append(rast)
             grass.run_command('g.copy', raster=rast + '@' + new_mapset + ',' + rast)
-            # set nulls
-            grass.run_command('i.zero2null', map=rast, quiet=True)
         grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
     # space time dataset
     grass.message(_("Creating STRDS of Sentinel scenes ..."))
