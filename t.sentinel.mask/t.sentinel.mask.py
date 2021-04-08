@@ -177,6 +177,13 @@ def main():
     times = [x.split('|')[2] for x in grass.parse_command('t.rast.list', input=strds, flags='u')]
     s2_scenes = dict()
     for strdsrast, time in zip(strdsrasters, times):
+        # check if strdsrast has data, skip otherwise
+        stats = grass.parse_command("r.info", map=strdsrast, flags="r")
+        if stats["min"] == "NULL" and stats["max"] == "NULL":
+            grass.warning(_("Raster {} only consists of NULL() in current "
+                            "region. Cloud/shadow detection "
+                            "is skipped.").format(strdsrast))
+            continue
         parts = strdsrast.split('_')
         name = "%s_%s" % (parts[0],parts[1])
         band = parts[2]
