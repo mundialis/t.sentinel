@@ -48,6 +48,14 @@
 #%end
 
 #%option
+#% key: pattern_file
+#% type: string
+#% required: no
+#% multiple: no
+#% description: File name pattern to import
+#%end
+
+#%option
 #% key: mapsetid
 #% type: string
 #% required: yes
@@ -220,6 +228,8 @@ def main():
         kwargs['extent'] = 'region'
     if options['metadata']:
         kwargs['metadata'] = options['metadata']
+    if options["pattern_file"]:
+        kwargs["pattern_file"] = options["pattern_file"]
 
     kwargsstr = ""
     flagstr = ""
@@ -232,7 +242,11 @@ def main():
     resp = cmd.communicate()
     for resp_line in resp:
         if 'Input raster does not overlap current computational region' in resp_line.decode("utf-8"):
-            grass.warning(_("Input raster <%s> does not overlap current computational region") % options['input'])
+            if options["pattern_file"]:
+                raster_var = options["pattern_file"]
+            else:
+                raster_var = options["input"]
+            grass.warning(_("Input raster <%s> does not overlap current computational region") % raster_var)
 
     # resampling
     if flags['i']:

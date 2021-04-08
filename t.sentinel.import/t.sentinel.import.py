@@ -55,7 +55,7 @@
 
 #%option G_OPT_F_INPUT
 #% key: settings
-#% required: yes
+#% required: no
 #% label: Full path to settings file (user, password)
 #%end
 
@@ -83,6 +83,7 @@
 #% type: string
 #% description: Start date ('YYYY-MM-DD')
 #% guisection: Filter
+#% required: no
 #%end
 
 #%option
@@ -90,6 +91,7 @@
 #% type: string
 #% description: End date ('YYYY-MM-DD')
 #% guisection: Filter
+#% required: no
 #%end
 
 #%option
@@ -99,6 +101,7 @@
 #% options: ESA_COAH,USGS_EE
 #% answer: ESA_COAH
 #% guisection: Filter
+#% required: no
 #%end
 
 #%option
@@ -152,6 +155,15 @@
 #% description: Directory to hold temporary files (they can be large)
 #%end
 
+#%option
+#% key: input_dir
+#% type: string
+#% required: no
+#% multiple: no
+#% label: Directory with locally stored S2-data. If this option is used, no downloading will be performed
+#% description: If this option is used, no downloading will be performed.
+#%end
+
 #%option G_OPT_MEMORYMB
 #%end
 
@@ -167,6 +179,8 @@
 #%rules
 #% collective: start, end, producttype
 #% excludes: s2names, start, end, producttype
+#% excludes: input_dir, s2names, start, end, producttype, settings, clouds
+#% required: input_dir, start, s2names
 #% requires: -a, sen2cor_path
 #% requires: -e, s2names
 #%end
@@ -316,30 +330,39 @@ def main():
     except Exception as e:
         grass.fatal(_('Unable to create temp dir {}').format(download_dir))
 
-    download_args = {
-        'settings': options['settings'],
-        'nprocs': options['nprocs'],
-        'output': download_dir,
-        'datasource': options['datasource'],
-        'flags': 'f'
-    }
-    if options['limit']:
-        download_args['limit'] = options['limit']
-    if options['s2names']:
-        download_args['flags'] += 's'
-        download_args['scene_name'] = s2namesstr.strip()
-        if options['datasource'] == 'USGS_EE':
-            if flags['e']:
-                download_args['flags'] += 'e'
-            download_args['producttype'] = 'S2MSI1C'
-    else:
-        download_args['clouds'] = options['clouds']
-        download_args['start'] = options['start']
-        download_args['end'] = options['end']
-        download_args['producttype'] = options['producttype']
+    if not options['input_dir']:
+        # auxiliary variable showing whether each S2-scene lies in an
+        # individual folder
+        single_folders = True
 
-    grass.run_command('i.sentinel.parallel.download',
-                      **download_args)
+        download_args = {
+            'settings': options['settings'],
+            'nprocs': options['nprocs'],
+            'output': download_dir,
+            'datasource': options['datasource'],
+            'flags': 'f'
+        }
+        if options['limit']:
+            download_args['limit'] = options['limit']
+        if options['s2names']:
+            download_args['flags'] += 's'
+            download_args['scene_name'] = s2namesstr.strip()
+            if options['datasource'] == 'USGS_EE':
+                if flags['e']:
+                    download_args['flags'] += 'e'
+                download_args['producttype'] = 'S2MSI1C'
+        else:
+            download_args['clouds'] = options['clouds']
+            download_args['start'] = options['start']
+            download_args['end'] = options['end']
+            download_args['producttype'] = options['producttype']
+
+        grass.run_command('i.sentinel.parallel.download',
+                          **download_args)
+    else:
+        download_dir = options['input_dir']
+        single_folders = False
+
     number_of_scenes = len(os.listdir(download_dir))
     nprocs_final = min(number_of_scenes, int(options['nprocs']))
 
@@ -356,10 +379,14 @@ def main():
         grass.message(_('Starting atmospheric correction with sen2cor...').format(nprocs_final))
         queue_sen2cor = ParallelModuleQueue(nprocs=nprocs_final)
         for idx, subfolder in enumerate(os.listdir(download_dir)):
-            folderpath = os.path.join(download_dir, subfolder)
-            for file in os.listdir(folderpath):
-                if file.endswith('.SAFE'):
-                    filepath = os.path.join(folderpath, file)
+            if single_folders is False:
+                if subfolder.endswith('.SAFE'):
+                    filepath = os.path.join(download_dir, subfolder)
+            else:
+                folderpath = os.path.join(download_dir, subfolder)
+                for file in os.listdir(folderpath):
+                    if file.endswith('.SAFE'):
+                        filepath = os.path.join(folderpath, file)
             output_dir = os.path.join(
                 sen2cor_folder, 'sen2cor_result_{}'.format(idx))
             sen2cor_module = Module(
@@ -374,6 +401,7 @@ def main():
             queue_sen2cor.put(sen2cor_module)
         queue_sen2cor.wait()
         download_dir = sen2cor_folder
+        single_folders = True
 
     grass.message(_("Importing Sentinel scenes ..."))
     env = grass.gisenv()
@@ -383,6 +411,7 @@ def main():
     ### save current region
     id = str(os.getpid())
     currentregion = 'tmp_region_' + id
+    rm_regions.append(currentregion)
     grass.run_command('g.region', save=currentregion, flags='p')
 
     queue_import = ParallelModuleQueue(nprocs=nprocs_final)
@@ -393,27 +422,42 @@ def main():
         importflag += 'i'
     if flags['c']:
         importflag += 'c'
-    json_standard_folder = os.path.join(env['GISDBASE'], env['LOCATION_NAME'], env['MAPSET'], 'cell_misc')
+    json_standard_folder = os.path.join(env['GISDBASE'], env['LOCATION_NAME'],
+                                        env['MAPSET'], 'cell_misc')
+
     if not os.path.isdir(json_standard_folder):
         os.makedirs(json_standard_folder)
-    subfolders = []
     for idx, subfolder in enumerate(os.listdir(download_dir)):
         if os.path.isdir(os.path.join(download_dir, subfolder)):
-            subfolders.append(subfolder)
-            mapsetid = 'S2_import_%s' %(str(idx+1))
+            mapsetid = 'S2_import_%s' % (str(idx+1))
             mapsetids.append(mapsetid)
-            directory = os.path.join(download_dir, subfolder)
+            import_kwargs = {
+                "mapsetid": mapsetid,
+                "memory": memory_per_proc,
+                "pattern": options["pattern"],
+                "flags": importflag,
+                "region": currentregion,
+                "metadata": json_standard_folder
+            }
+            if single_folders is True:
+                directory = os.path.join(download_dir, subfolder)
+            else:
+                directory = download_dir
+                if subfolder.endswith(".SAFE"):
+                    pattern_file = subfolder.split(".SAFE")[0]
+                elif subfolder.endswith(".zip"):
+                    pattern_file = subfolder.split(".zip")[0]
+                else:
+                    grass.warning(_("{} is not in .SAFE or .zip format, "
+                                    "skipping...").format(
+                                    os.path.join(download_dir, subfolder)))
+                    continue
+                import_kwargs["pattern_file"] = pattern_file
+            import_kwargs["input"] = directory
             i_sentinel_import = Module(
-                'i.sentinel.import.worker',
-                input=directory,
-                mapsetid=mapsetid,
-                memory=memory_per_proc,
-                pattern=options['pattern'],
-                flags=importflag,
-                region=currentregion,
-                metadata=json_standard_folder,
-                run_=False
-            )
+                "i.sentinel.import.worker",
+                run_=False,
+                **import_kwargs)
             queue_import.put(i_sentinel_import)
     queue_import.wait()
     grass.run_command('g.remove', type='region', name=currentregion, flags='f')
