@@ -363,8 +363,7 @@ def main():
         download_dir = options['input_dir']
         single_folders = False
 
-    dl_list = os.listdir(download_dir)
-    number_of_scenes = len([dir for dir in dl_list if dir.endswith(".SAFE")])
+    number_of_scenes = len(os.listdir(download_dir))
     nprocs_final = min(number_of_scenes, int(options['nprocs']))
 
     # run atmospheric correction
@@ -459,17 +458,6 @@ def main():
                 "i.sentinel.import.worker",
                 run_=False,
                 **import_kwargs)
-            # i_sentinel_import = Module(
-            #     'i.sentinel.import.worker',
-            #     input=directory,
-            #     mapsetid=mapsetid,
-            #     memory=memory_per_proc,
-            #     pattern=options['pattern'],
-            #     flags=importflag,
-            #     region=currentregion,
-            #     metadata=json_standard_folder,
-            #     run_=False
-            # )
             queue_import.put(i_sentinel_import)
     queue_import.wait()
     grass.run_command('g.remove', type='region', name=currentregion, flags='f')
