@@ -111,6 +111,12 @@
 #% guisection: Print
 #%end
 
+#%flag
+#% key: n
+#% description: reclassify pixels with value 0 to null() using i.zero2null
+#%end
+
+
 import atexit
 import os
 import psutil # pip3 install psutil
@@ -182,6 +188,11 @@ def main():
                     "\n" +
                     "g.extension i.sentinel")
 
+    if not grass.find_program('i.zero2null', '--help'):
+        grass.fatal(_("The 'i.zero2null' module was not found, install it first:") +
+                    "\n" +
+                    "g.extension i.zero2null")
+
     # set some common environmental variables, like:
     os.environ.update(dict(GRASS_COMPRESS_NULLS='1',
                            GRASS_COMPRESSOR='LZ4',
@@ -233,7 +244,7 @@ def main():
 
     kwargsstr = ""
     flagstr = ""
-    for key,val in kwargs.items():
+    for key, val in kwargs.items():
         if not key == "flags":
             kwargsstr += (" %s='%s'" % (key, val))
         else:
@@ -248,6 +259,14 @@ def main():
                 raster_var = options["input"]
             grass.warning(_("Input raster <%s> does not overlap current computational region") % raster_var)
 
+    if flags["n"]:
+        rasters = list(grass.parse_command(
+            "g.list", type="raster", mapset=".").keys())
+        for raster in rasters:
+            # check if the entire raster is null()
+            stats = grass.parse_command("r.info", map=raster, flags="r")
+            if not (stats["min"] == "NULL" or stats["max"] == "NULL"):
+                grass.run_command("i.zero2null", map=raster, quiet=True)
     # resampling
     if flags['i']:
         grass.message('Resampling bands to 10m')
