@@ -97,8 +97,8 @@
 #%option
 #% key: datasource
 #% description: Data-Hub to download scenes from
-#% label: Default is ESA Copernicus Open Access Hub (ESA_COAH), but Sentinel-2 L1C data can also be acquired from USGS Earth Explorer (USGS_EE). Download from USGS is currently only available when used together with the scene_name option.
-#% options: ESA_COAH,USGS_EE
+#% label: Default is ESA Copernicus Open Access Hub (ESA_COAH). Google Cloud Storage also offers the complete L1C and L2A archive. Sentinel-2 L1C data can also be acquired from USGS Earth Explorer (USGS_EE). Download from USGS is currently only available when used together with the scene_name option.
+#% options: ESA_COAH,USGS_EE,GCS
 #% answer: ESA_COAH
 #% guisection: Filter
 #% required: no
