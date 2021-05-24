@@ -119,13 +119,16 @@
 
 import atexit
 import os
-import psutil # pip3 install psutil
 import shutil
 import subprocess
 import sys
 
 import grass.script as grass
-
+try:
+    import psutil
+except ImportError:
+    grass.warning('You need to install psutil to use this module: '
+                  'pip install psutil')
 
 # initialize global vars
 rm_rasters = []

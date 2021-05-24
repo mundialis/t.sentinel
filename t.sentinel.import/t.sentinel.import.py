@@ -190,13 +190,16 @@ import atexit
 from datetime import date
 import multiprocessing as mp
 import os
-import psutil # pip3 install psutil
 import re
 import sys
 
 import grass.script as grass
 from grass.pygrass.modules import Module, ParallelModuleQueue
-
+try:
+    import psutil
+except ImportError:
+    grass.warning('You need to install psutil to use this module: '
+                  'pip install psutil')
 
 # initialize global vars
 rm_regions = []
@@ -291,7 +294,6 @@ def main():
     tmpdirectory = options['directory']
 
     test_nprocs_memory()
-
 
     if not grass.find_program('i.sentinel.download', '--help'):
         grass.fatal(_("The 'i.sentinel.download' module was not found, install it first:") +
