@@ -391,6 +391,10 @@ def main():
                         filepath = os.path.join(folderpath, file)
             output_dir = os.path.join(
                 sen2cor_folder, 'sen2cor_result_{}'.format(idx))
+            try:
+                os.makedirs(output_dir)
+            except Exception:
+                grass.fatal(_('Unable to create directory {}').format(output_dir))
             sen2cor_module = Module(
                 'i.sentinel-2.sen2cor',
                 input_file=filepath,
