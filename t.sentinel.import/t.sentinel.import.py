@@ -489,15 +489,28 @@ def main():
             't.create', output=strds, title="Sentinel-2",
             desc="Sentinel-2", quiet=True)
 
+        # check GRASS version
+        g79_or_higher = False
+        gversion = grass.parse_command("g.version", flags="g")["version"]
+        gversion_base = gversion.split(".")[:2]
+        gversion_base_int = tuple([int(a) for a in gversion_base])
+        if gversion_base_int >= tuple((7, 9)):
+            g79_or_higher = True
+
         # create register file
         registerfile = grass.tempfile()
         file = open(registerfile, 'w')
         for imp_rast in list(set(maplist)):
+            band_str_tmp1 = imp_rast.split("_")[2]
+            band_str = band_str_tmp1.replace("B0", "").replace("B", "")
             date_str1 = imp_rast.split('_')[1].split('T')[0]
             date_str2 = "%s-%s-%s" % (date_str1[:4], date_str1[4:6], date_str1[6:])
             time_str = imp_rast.split('_')[1].split('T')[1]
             clock_str2 = "%s:%s:%s" % (time_str[:2], time_str[2:4], time_str[4:])
-            file.write("%s|%s %s\n" % (imp_rast, date_str2, clock_str2))
+            write_str = "%s|%s %s" % (imp_rast, date_str2, clock_str2)
+            if g79_or_higher is True:
+                write_str += "|S2_%s" % band_str
+            file.write("%s\n" % write_str)
         file.close()
         grass.run_command('t.register', input=strds, file=registerfile, quiet=True)
         # remove registerfile

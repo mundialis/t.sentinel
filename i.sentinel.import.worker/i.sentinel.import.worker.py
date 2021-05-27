@@ -116,6 +116,10 @@
 #% description: reclassify pixels with value 0 to null() using i.zero2null
 #%end
 
+#%rules
+#% exclusive: metadata,-j
+#%end
+
 
 import atexit
 import os
