@@ -40,6 +40,21 @@
 #% description: Name of new mapset to run i.sentinel.mask
 #% guisection: Required
 #%end
+#%option
+#% key: pg_database
+#% type: string
+#% required: no
+#% multiple: no
+#% description: Name of optional PostgreSQL database to use as vector attribute connection
+#%end
+#%option
+#% key: pg_user
+#% type: string
+#% required: no
+#% multiple: no
+#% description: Name of the PostgreSQL user
+#% answer: postgres
+#%end
 #%option G_OPT_F_INPUT
 #% key: input_file
 #% description: Name of the .txt file containing the list of input bands
@@ -175,6 +190,7 @@
 #% excludes: -c,shadow_mask,shadow_raster
 #% required: input_file,blue,green,red,nir,nir8a,swir11,swir12,mtd_file
 #% excludes: input_file,blue,green,red,nir,nir8a,swir11,swir12,mtd_file
+#% collective: pg_database,pg_user
 #%end
 
 import sys
@@ -213,11 +229,18 @@ def main():
     shutil.copyfile(gisrc, newgisrc)
     os.environ['GISRC'] = newgisrc
 
-    ### change mapset
+    # change mapset
     grass.message("GISRC: <%s>" % os.environ['GISRC'])
     grass.run_command('g.mapset', flags='c', mapset=new_mapset)
 
-    ### import data
+    # define new database connection
+    if options["pg_database"] is not None:
+        grass.run_command("db.connect", driver="pg",
+                          database=options["pg_database"], quiet=True)
+        grass.run_command("db.login", database=options["pg_database"],
+                          user=options["pg_user"], quiet=True)
+
+    # import data
     grass.message(_("Running i.sentinel.mask ..."))
     kwargs = dict()
     for opt,val in options.items():
@@ -229,12 +252,12 @@ def main():
             else:
                 kwargs[opt] = val
     flagstr = ''
-    for flag,val in flags.items():
+    for flag, val in flags.items():
         if val:
             flagstr += flag
     grass.run_command('g.region', raster=kwargs['nir'])
     grass.run_command('i.sentinel.mask', quiet=True,
-        flags=flagstr, **kwargs)
+                      flags=flagstr, **kwargs)
 
     grass.utils.try_remove(newgisrc)
     return 0
