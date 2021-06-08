@@ -97,9 +97,27 @@
 #% answer: 1
 #%end
 
+#%option
+#% key: pg_database
+#% type: string
+#% required: no
+#% multiple: no
+#% description: Name of optional PostgreSQL database to use as vector attribute connection
+#%end
+
+#%option
+#% key: pg_user
+#% type: string
+#% required: no
+#% multiple: no
+#% description: Name of the PostgreSQL user
+#% answer: postgres
+#%end
+
 #%rules
 #% requires_all: output_shadows,metadata
 #% requires_all: threshold,metadata
+#% collective: pg_database,pg_user
 #%end
 
 import atexit
@@ -247,9 +265,12 @@ def main():
                 kwargs['shadow_raster'] = s2_scene['shadows']
                 kwargs['metadata'] = s2_scene['metadata']
                 kwargs['shadow_threshold'] = 1000
-                flags='s'
+                flags = 's'
             else:
-                flags='sc'
+                flags = 'sc'
+            if options["pg_database"]:
+                kwargs["pg_database"] = options["pg_database"]
+                kwargs["pg_user"] = options["pg_user"]
             newmapset = s2_scene['clouds']
             # grass.run_command(
             i_sentinel_mask = Module(
