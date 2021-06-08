@@ -238,7 +238,7 @@ def main():
         grass.run_command("db.connect", driver="pg",
                           database=options["pg_database"], quiet=True)
         grass.run_command("db.login", database=options["pg_database"],
-                          user=options["pg_user"], quiet=True)
+                          user=options["pg_user"], quiet=True, overwrite=True)
 
     # import data
     grass.message(_("Running i.sentinel.mask ..."))
