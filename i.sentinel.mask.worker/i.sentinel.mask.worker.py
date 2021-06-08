@@ -255,7 +255,7 @@ def main():
     for flag, val in flags.items():
         if val:
             flagstr += flag
-    grass.run_command('g.region', raster=kwargs['nir'])
+    grass.run_command('g.region', raster=kwargs['nir'], zoom=kwargs["nir"])
     grass.run_command('i.sentinel.mask', quiet=True,
                       flags=flagstr, **kwargs)
 
