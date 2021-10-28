@@ -434,7 +434,7 @@ def main():
     if not os.path.isdir(json_standard_folder):
         os.makedirs(json_standard_folder)
     for idx, subfolder in enumerate(os.listdir(download_dir)):
-        if os.path.isdir(os.path.join(download_dir, subfolder)):
+        if os.path.exists(os.path.join(download_dir, subfolder)):
             mapsetid = 'S2_import_%s' % (str(idx+1))
             mapsetids.append(mapsetid)
             import_kwargs = {
@@ -453,6 +453,8 @@ def main():
                     pattern_file = subfolder.split(".SAFE")[0]
                 elif subfolder.endswith(".zip"):
                     pattern_file = subfolder.split(".zip")[0]
+                    if ".SAFE" in pattern_file:
+                        pattern_file = pattern_file.split(".SAFE")[0]
                 else:
                     grass.warning(_("{} is not in .SAFE or .zip format, "
                                     "skipping...").format(
