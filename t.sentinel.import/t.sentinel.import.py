@@ -454,7 +454,7 @@ def main():
                 elif subfolder.endswith(".zip"):
                     pattern_file = subfolder.split(".SAFE.zip")[0]
                 else:
-                    grass.warning(_("{} is not in .SAFE or .zip format, "
+                    grass.warning(_("{} is not in .SAFE or SAFE.zip format, "
                                     "skipping...").format(
                                     os.path.join(download_dir, subfolder)))
                     continue
