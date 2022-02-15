@@ -4,6 +4,7 @@
 download and import the Sentinel-2 scenes and create a STRDS.
 
 <h2>EXAMPLE</h2>
+
 <div class="code"><pre>
 t.sentinel.import s2names=s2names2.txt settings=/mnt/pgpass/.sentinel.txt \
   nprocs=7 memory=8000 -c pattern='B0(4|8)_10m' strds_output=test
@@ -22,6 +23,7 @@ t.sentinel.import s2names=s2names2.txt settings=/mnt/pgpass/.sentinel.txt \
 </em>
 
 <h2>REQUIREMENTS</h2>
+
 If atmospheric correction should be run using the <b>-a</b> flag,
 <a href="http://step.esa.int/main/snap-supported-plugins/sen2cor/">Sen2Cor</a>
 needs to be installed. For additional information, see
@@ -29,9 +31,4 @@ needs to be installed. For additional information, see
 
 <h2>AUTHOR</h2>
 
-Anika Weinmann, <a href="https://www.mundialis.de/">mundialis</a>
-
-<!--
-<p>
-<i>Last changed: $Date$</i>
--->
+Anika Weinmann, <a href="https://www.mundialis.de/">mundialis</a>, Germany
