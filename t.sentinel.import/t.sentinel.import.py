@@ -156,6 +156,16 @@
 #%end
 
 #%option
+#% key: extent
+#% type: string
+#% required: no
+#% multiple: no
+#% description: data extent to use with i.sentinel.import
+#% options: region,input
+#% answer: region
+#%end
+
+#%option
 #% key: input_dir
 #% type: string
 #% required: no
@@ -338,12 +348,13 @@ def main():
         single_folders = True
 
         download_args = {
-            'settings': options['settings'],
             'nprocs': options['nprocs'],
             'output': download_dir,
             'datasource': options['datasource'],
             'flags': 'f'
         }
+        if not (options["datasource"] == "GCS" and options["s2names"]):
+            download_args["settings"] = options["settings"]
         if options['limit']:
             download_args['limit'] = options['limit']
         if options['s2names']:
@@ -442,9 +453,10 @@ def main():
                 "memory": memory_per_proc,
                 "pattern": options["pattern"],
                 "flags": importflag,
-                "region": currentregion,
                 "metadata": json_standard_folder
             }
+            if options["extent"] == "region":
+                import_kwargs["region"] = currentregion
             if single_folders is True:
                 directory = os.path.join(download_dir, subfolder)
             else:
