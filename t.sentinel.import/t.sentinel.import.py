@@ -17,173 +17,183 @@
 #
 #############################################################################
 
-#%Module
-#% description: Downloads and imports multiple Sentinel-2 scenes in parallel and creates a STRDS.
-#% keyword: temporal
-#% keyword: satellite
-#% keyword: Sentinel
-#% keyword: download
-#% keyword: import
-#%end
+# %Module
+# % description: Downloads and imports multiple Sentinel-2 scenes in parallel and creates a STRDS.
+# % keyword: temporal
+# % keyword: satellite
+# % keyword: Sentinel
+# % keyword: download
+# % keyword: import
+# %end
 
-#%flag
-#% key: c
-#% description: Import cloud masks as raster maps
-#% guisection: Settings
-#%end
+# %flag
+# % key: c
+# % description: Import cloud masks as raster maps
+# % guisection: Settings
+# %end
 
-#%flag
-#% key: i
-#% description: Resample 20/60m bands to 10m using r.resamp.interp
-#%end
+# %flag
+# % key: i
+# % description: Resample 20/60m bands to 10m using r.resamp.interp
+# %end
 
-#%flag
-#% key: f
-#% description: Use footprint to set null values TODO!!!
-#% guisection: Settings
-#%end
+# %flag
+# % key: f
+# % description: Use footprint to set null values TODO!!!
+# % guisection: Settings
+# %end
 
-#%flag
-#% key: e
-#% description: Use ESA-style scenename/s to download from USGS
-#%end
+# %flag
+# % key: e
+# % description: Use ESA-style scenename/s to download from USGS
+# %end
 
-#%flag
-#% key: a
-#% description: Run atmospheric correction with sen2cor before importing
-#%end
+# %flag
+# % key: a
+# % description: Run atmospheric correction with sen2cor before importing
+# %end
 
-#%option G_OPT_F_INPUT
-#% key: settings
-#% required: no
-#% label: Full path to settings file (user, password)
-#%end
+# %option G_OPT_F_INPUT
+# % key: settings
+# % required: no
+# % label: Full path to settings file (user, password)
+# %end
 
-#%option
-#% key: clouds
-#% type: integer
-#% description: Maximum cloud cover percentage for Sentinel-2 scene
-#% required: no
-#% guisection: Filter
-#% answer: 100
-#%end
+# %option
+# % key: clouds
+# % type: integer
+# % description: Maximum cloud cover percentage for Sentinel-2 scene
+# % required: no
+# % guisection: Filter
+# % answer: 100
+# %end
 
-#%option
-#% key: producttype
-#% type: string
-#% description: Sentinel-2 product type to filter
-#% required: no
-#% options: S2MSI1C,S2MSI2A,S2MSI2Ap
-#% answer: S2MSI2A
-#% guisection: Filter
-#%end
+# %option
+# % key: producttype
+# % type: string
+# % description: Sentinel-2 product type to filter
+# % required: no
+# % options: S2MSI1C,S2MSI2A,S2MSI2Ap
+# % answer: S2MSI2A
+# % guisection: Filter
+# %end
 
-#%option
-#% key: start
-#% type: string
-#% description: Start date ('YYYY-MM-DD')
-#% guisection: Filter
-#% required: no
-#%end
+# %option
+# % key: start
+# % type: string
+# % description: Start date ('YYYY-MM-DD')
+# % guisection: Filter
+# % required: no
+# %end
 
-#%option
-#% key: end
-#% type: string
-#% description: End date ('YYYY-MM-DD')
-#% guisection: Filter
-#% required: no
-#%end
+# %option
+# % key: end
+# % type: string
+# % description: End date ('YYYY-MM-DD')
+# % guisection: Filter
+# % required: no
+# %end
 
-#%option
-#% key: datasource
-#% description: Data-Hub to download scenes from
-#% label: Default is ESA Copernicus Open Access Hub (ESA_COAH). Google Cloud Storage also offers the complete L1C and L2A archive. Sentinel-2 L1C data can also be acquired from USGS Earth Explorer (USGS_EE). Download from USGS is currently only available when used together with the scene_name option.
-#% options: ESA_COAH,USGS_EE,GCS
-#% answer: ESA_COAH
-#% guisection: Filter
-#% required: no
-#%end
+# %option
+# % key: datasource
+# % description: Data-Hub to download scenes from
+# % label: Default is ESA Copernicus Open Access Hub (ESA_COAH). Google Cloud Storage also offers the complete L1C and L2A archive. Sentinel-2 L1C data can also be acquired from USGS Earth Explorer (USGS_EE). Download from USGS is currently only available when used together with the scene_name option.
+# % options: ESA_COAH,USGS_EE,GCS
+# % answer: ESA_COAH
+# % guisection: Filter
+# % required: no
+# %end
 
-#%option
-#% key: limit
-#% type: integer
-#% description: Maximum number of scenes to filter/download
-#% required: no
-#% guisection: Filter
-#%end
+# %option
+# % key: limit
+# % type: integer
+# % description: Maximum number of scenes to filter/download
+# % required: no
+# % guisection: Filter
+# %end
 
-#%option
-#% key: s2names
-#% type: string
-#% required: no
-#% multiple: yes
-#% description: List of Sentinel-2 names or file with this list
-#%end
+# %option
+# % key: s2names
+# % type: string
+# % required: no
+# % multiple: yes
+# % description: List of Sentinel-2 names or file with this list
+# %end
 
-#%option
-#% key: sen2cor_path
-#% required: no
-#% type: string
-#% label: Path to sen2cor home directory
-#% description: e.g. /home/user/sen2cor
-#%end
+# %option
+# % key: sen2cor_path
+# % required: no
+# % type: string
+# % label: Path to sen2cor home directory
+# % description: e.g. /home/user/sen2cor
+# %end
 
-#%option
-#% key: pattern
-#% type: string
-#% required: no
-#% multiple: no
-#% description: Band name pattern to import
-#% guisection: Filter
-#%end
+# %option
+# % key: pattern
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Band name pattern to import
+# % guisection: Filter
+# %end
 
-#%option
-#% key: strds_output
-#% type: string
-#% required: no
-#% multiple: no
-#% key_desc: name
-#% description: Name of the output space time dataset
-#% gisprompt: new,stds,strds
-#%end
+# %option
+# % key: strds_output
+# % type: string
+# % required: no
+# % multiple: no
+# % key_desc: name
+# % description: Name of the output space time dataset
+# % gisprompt: new,stds,strds
+# %end
 
-#%option
-#% key: directory
-#% type: string
-#% required: no
-#% multiple: no
-#% description: Directory to hold temporary files (they can be large)
-#%end
+# %option
+# % key: directory
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Directory to hold temporary files (they can be large)
+# %end
 
-#%option
-#% key: input_dir
-#% type: string
-#% required: no
-#% multiple: no
-#% label: Directory with locally stored S2-data. If this option is used, no downloading will be performed
-#% description: If this option is used, no downloading will be performed.
-#%end
+# %option
+# % key: extent
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Data extent to use with i.sentinel.import
+# % options: region,input
+# % answer: region
+# %end
 
-#%option G_OPT_MEMORYMB
-#%end
+# %option
+# % key: input_dir
+# % type: string
+# % required: no
+# % multiple: no
+# % label: Directory with locally stored S2-data. If this option is used, no downloading will be performed
+# % description: If this option is used, no downloading will be performed.
+# %end
 
-#%option
-#% key: nprocs
-#% type: integer
-#% required: no
-#% multiple: no
-#% label: Number of parallel processes to use
-#% answer: 1
-#%end
+# %option G_OPT_MEMORYMB
+# %end
 
-#%rules
-#% collective: start, end, producttype
-#% excludes: s2names, start, end, producttype
-#% excludes: input_dir, s2names, start, end, producttype, settings, clouds
-#% required: input_dir, start, s2names
-#% requires: -a, sen2cor_path
-#% requires: -e, s2names
-#%end
+# %option
+# % key: nprocs
+# % type: integer
+# % required: no
+# % multiple: no
+# % label: Number of parallel processes to use
+# % answer: 1
+# %end
+
+# %rules
+# % collective: start, end, producttype
+# % excludes: s2names, start, end, producttype
+# % excludes: input_dir, s2names, start, end, producttype, settings, clouds
+# % required: input_dir, start, s2names
+# % requires: -a, sen2cor_path
+# % requires: -e, s2names
+# %end
 
 
 import atexit
@@ -338,12 +348,13 @@ def main():
         single_folders = True
 
         download_args = {
-            'settings': options['settings'],
             'nprocs': options['nprocs'],
             'output': download_dir,
             'datasource': options['datasource'],
             'flags': 'f'
         }
+        if not (options["datasource"] == "GCS" and options["s2names"]):
+            download_args["settings"] = options["settings"]
         if options['limit']:
             download_args['limit'] = options['limit']
         if options['s2names']:
@@ -442,9 +453,10 @@ def main():
                 "memory": memory_per_proc,
                 "pattern": options["pattern"],
                 "flags": importflag,
-                "region": currentregion,
                 "metadata": json_standard_folder
             }
+            if options["extent"] == "region":
+                import_kwargs["region"] = currentregion
             if single_folders is True:
                 directory = os.path.join(download_dir, subfolder)
             else:
