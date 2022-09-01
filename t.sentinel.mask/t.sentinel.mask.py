@@ -17,90 +17,90 @@
 #
 #############################################################################
 
-#%Module
-#% description: Creates a space time raster data set of cloud masks and shadow masks by running i.sentinel.mask parallelized.
-#% keyword: temporal
-#% keyword: satellite
-#% keyword: Sentinel
-#% keyword: cloud detection
-#% keyword: shadow detection
-#%end
+# %Module
+# % description: Creates a space time raster data set of cloud masks and shadow masks by running i.sentinel.mask parallelized.
+# % keyword: temporal
+# % keyword: satellite
+# % keyword: Sentinel
+# % keyword: cloud detection
+# % keyword: shadow detection
+# %end
 
-#%option
-#% key: input
-#% type: string
-#% required: yes
-#% multiple: no
-#% description: STRDS with Sentinel-2 scenes (with bands B02,B03,B04,B08,B8A,B11,B12)
-#%end
+# %option
+# % key: input
+# % type: string
+# % required: yes
+# % multiple: no
+# % description: STRDS with Sentinel-2 scenes (with bands B02,B03,B04,B08,B8A,B11,B12)
+# %end
 
-#%option
-#% key: threshold
-#% type: double
-#% required: no
-#% multiple: no
-#% description: Minimum ESA cloud percentage to trigger cloud and shadow detection.
-#% answer: 0
-#%end
+# %option
+# % key: threshold
+# % type: double
+# % required: no
+# % multiple: no
+# % description: Minimum ESA cloud percentage to trigger cloud and shadow detection.
+# % answer: 0
+# %end
 
-#%option
-#% key: output_clouds
-#% type: string
-#% required: yes
-#% multiple: no
-#% description: STRDS with cloud masks of Sentinel-2 scenes
-#%end
+# %option
+# % key: output_clouds
+# % type: string
+# % required: yes
+# % multiple: no
+# % description: STRDS with cloud masks of Sentinel-2 scenes
+# %end
 
-#%option
-#% key: min_size_clouds
-#% type: double
-#% required: no
-#% multiple: no
-#% description: Value option that sets the minimal area size limit (in hectares) of the clouds
-#%end
+# %option
+# % key: min_size_clouds
+# % type: double
+# % required: no
+# % multiple: no
+# % description: Value option that sets the minimal area size limit (in hectares) of the clouds
+# %end
 
-#%option
-#% key: output_shadows
-#% type: string
-#% required: no
-#% multiple: no
-#% description: STRDS with shodow masks of Sentinel-2 scenes
-#%end
+# %option
+# % key: output_shadows
+# % type: string
+# % required: no
+# % multiple: no
+# % description: STRDS with shodow masks of Sentinel-2 scenes
+# %end
 
-#%option
-#% key: min_size_shadows
-#% type: double
-#% required: no
-#% multiple: no
-#% description: Value option that sets the minimal area size limit (in hectares) of the cloud shadows
-#%end
+# %option
+# % key: min_size_shadows
+# % type: double
+# % required: no
+# % multiple: no
+# % description: Value option that sets the minimal area size limit (in hectares) of the cloud shadows
+# %end
 
-#%option
-#% key: metadata
-#% type: string
-#% required: no
-#% multiple: no
-#% key_desc: name
-#% label: Name of folder with Sentinel metadata json files
-#% description: Default is LOCATION/MAPSET/cell_misc/
-#% gisprompt: old,file,file
-#% answer: default
-#% guisection: Metadata
-#%end
+# %option
+# % key: metadata
+# % type: string
+# % required: no
+# % multiple: no
+# % key_desc: name
+# % label: Name of folder with Sentinel metadata json files
+# % description: Default is LOCATION/MAPSET/cell_misc/
+# % gisprompt: old,file,file
+# % answer: default
+# % guisection: Metadata
+# %end
 
-#%option
-#% key: nprocs
-#% type: integer
-#% required: no
-#% multiple: no
-#% label: Number of parallel processes to use
-#% answer: 1
-#%end
+# %option
+# % key: nprocs
+# % type: integer
+# % required: no
+# % multiple: no
+# % label: Number of parallel processes to use
+# % answer: 1
+# %end
 
-#%rules
-#% requires_all: output_shadows,metadata
-#% requires_all: threshold,metadata
-#%end
+# %rules
+# % requires_all: output_shadows,metadata
+# % requires_all: threshold,metadata
+# %end
 
 import atexit
 from datetime import datetime

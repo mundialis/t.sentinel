@@ -22,103 +22,103 @@
 #
 ############################################################################
 
-#%module
-#% description: Imports Sentinel-2 data into a new mapset, and optionally resamples bands to 10m.
-#% keyword: imagery
-#% keyword: satellite
-#% keyword: Sentinel
-#% keyword: import
-#%end
+# %module
+# % description: Imports Sentinel-2 data into a new mapset, and optionally resamples bands to 10m.
+# % keyword: imagery
+# % keyword: satellite
+# % keyword: Sentinel
+# % keyword: import
+# %end
 
-#%option G_OPT_F_INPUT
-#% key: input
-#% type: string
-#% required: yes
-#% multiple: no
-#% key_desc: name
-#% description: Name of input directory with downloaded Sentinel data
-#%end
+# %option G_OPT_F_INPUT
+# % key: input
+# % type: string
+# % required: yes
+# % multiple: no
+# % key_desc: name
+# % description: Name of input directory with downloaded Sentinel data
+# %end
 
-#%option
-#% key: pattern
-#% type: string
-#% required: no
-#% multiple: no
-#% description: Band name pattern to import
-#%end
+# %option
+# % key: pattern
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Band name pattern to import
+# %end
 
-#%option
-#% key: pattern_file
-#% type: string
-#% required: no
-#% multiple: no
-#% description: File name pattern to import
-#%end
+# %option
+# % key: pattern_file
+# % type: string
+# % required: no
+# % multiple: no
+# % description: File name pattern to import
+# %end
 
-#%option
-#% key: mapsetid
-#% type: string
-#% required: yes
-#% multiple: no
-#% description: ID for mapset
-#%end
+# %option
+# % key: mapsetid
+# % type: string
+# % required: yes
+# % multiple: no
+# % description: ID for mapset
+# %end
 
-#%option
-#% key: region
-#% type: string
-#% required: no
-#% multiple: no
-#% key_desc: name
-#% description: Set current region from named region
-#%end
+# %option
+# % key: region
+# % type: string
+# % required: no
+# % multiple: no
+# % key_desc: name
+# % description: Set current region from named region
+# %end
 
-#%option G_OPT_MEMORYMB
-#%end
+# %option G_OPT_MEMORYMB
+# %end
 
-#%option
-#% key: directory
-#% type: string
-#% required: no
-#% multiple: no
-#% description: Directory to hold temporary files (they can be large)
-#%end
+# %option
+# % key: directory
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Directory to hold temporary files (they can be large)
+# %end
 
-#%option G_OPT_M_DIR
-#% key: metadata
-#% description: Name of directory into which Sentinel metadata json dumps are saved
-#% required: no
-#%end
+# %option G_OPT_M_DIR
+# % key: metadata
+# % description: Name of directory into which Sentinel metadata json dumps are saved
+# % required: no
+# %end
 
-#%flag
-#% key: r
-#% description: Reproject raster data using r.import if needed
-#%end
+# %flag
+# % key: r
+# % description: Reproject raster data using r.import if needed
+# %end
 
-#%flag
-#% key: i
-#% description: Resample 20/60m bands to 10m using r.resamp.interp
-#%end
+# %flag
+# % key: i
+# % description: Resample 20/60m bands to 10m using r.resamp.interp
+# %end
 
-#%flag
-#% key: c
-#% description: Import cloud masks as raster maps
-#% guisection: Settings
-#%end
+# %flag
+# % key: c
+# % description: Import cloud masks as raster maps
+# % guisection: Settings
+# %end
 
-#%flag
-#% key: j
-#% description: Write metadata json for each band to LOCATION/MAPSET/json folder
-#% guisection: Print
-#%end
+# %flag
+# % key: j
+# % description: Write metadata json for each band to LOCATION/MAPSET/json folder
+# % guisection: Print
+# %end
 
-#%flag
-#% key: n
-#% description: reclassify pixels with value 0 to null() using i.zero2null
-#%end
+# %flag
+# % key: n
+# % description: reclassify pixels with value 0 to null() using i.zero2null
+# %end
 
-#%rules
-#% exclusive: metadata,-j
-#%end
+# %rules
+# % exclusive: metadata,-j
+# %end
 
 
 import atexit
