@@ -568,7 +568,7 @@ def main():
 
         for band in bands:
             if flags['i'] and ('20' in band or '60' in band):
-                band.replace('20', '10').replace('60', '10')
+                band = band.replace('20', '10').replace('60', '10')
             grass.run_command('t.rast.extract', input=strds, where="name like '%" + band + "%'", output="%s_%s" % (strds, band), quiet=True)
             grass.message("<%s_%s> is created" % (strds, band))
 
