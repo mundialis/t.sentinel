@@ -4,4 +4,4 @@ on:
 
 jobs:
   grass-manual:
-    uses: mundialis/github-workflows/.github/workflows/grass-manual.yml@main
+    uses: mundialis/github-workflows/.github/workflows/grass-manual.yml@grass-addon-manualpage
