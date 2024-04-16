@@ -1,3 +1,5 @@
+name: GRASS GIS addon manual
+
 on:
   push:
     branches: [ GRASSmanual ]
