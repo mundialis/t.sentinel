@@ -186,6 +186,13 @@
 # % answer: 1
 # %end
 
+# %option
+# % key: offset
+# % type: integer
+# % required: no
+# % description: Offset to add to the Sentinel bands to due to specific processing baseline (e.g. -1000)
+# %end
+
 # %rules
 # % collective: start, end, producttype
 # % excludes: s2names, start, end, producttype
@@ -201,6 +208,7 @@ from datetime import date
 import multiprocessing as mp
 import os
 import re
+import shutil
 import sys
 
 import grass.script as grass
@@ -321,6 +329,11 @@ def main():
         grass.fatal(_("The 'i.zero2null' module was not found, install it first:") +
                     "\n" +
                     "g.extension i.zero2null")
+
+    if not grass.find_program('r.mapcalc.tiled', '--help'):
+        grass.fatal(_("The 'r.mapcalc.tiled' module was not found, install it first:") +
+                    "\n" +
+                    "g.extension r.mapcalc.tiled")
 
     # create temporary directory to download data
     if tmpdirectory:
@@ -498,6 +511,35 @@ def main():
         for rast in grass.parse_command('g.list', type='raster', mapset=new_mapset):
             maplist.append(rast)
             grass.run_command('g.copy', raster=rast + '@' + new_mapset + ',' + rast)
+
+            if options["offset"]:
+                # save the description.json
+                tmp_desc_dir = os.path.join(tmpdirectory, "descriptions_json")
+                if not os.path.isdir(tmp_desc_dir):
+                    try:
+                        os.makedirs(tmp_desc_dir)
+                    except:
+                        grass.fatal(_(f"Unable to create directory {tmp_desc_dir}"))
+
+                desc_file_save = os.path.join(tmp_desc_dir, f"{rast}_description.json")
+                desc_file_in = os.path.join(json_standard_folder, rast, "description.json")
+                shutil.copy(desc_file_in, desc_file_save)
+
+                # calculate offset (metadata in cell_misc will be lost)
+                tmp_rast = f"rast_tmp_{os.getpid()}"
+                mapc_exp = (f"{tmp_rast} = if({rast} + {options['offset']} < 0, "
+                            f"0, {rast} + {options['offset']} )")
+                grass.run_command(f"r.mapcalc.tiled",
+                                  expression=mapc_exp,
+                                  nprocs=nprocs_final,
+                                  quiet=True)
+                grass.run_command("g.copy",
+                                  raster=f"{tmp_rast},{rast}",
+                                  overwrite=True,
+                                  quiet=True)
+                # copy the description.json back
+                shutil.copy(desc_file_save, desc_file_in)
+
         grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
     # space time dataset
     grass.message(_("Creating STRDS of Sentinel scenes ..."))
