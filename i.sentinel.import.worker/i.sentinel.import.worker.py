@@ -89,6 +89,16 @@
 # % required: no
 # %end
 
+# %option
+# % key: cloud_output
+# % type: string
+# % required: no
+# % multiple: no
+# % options: vector,raster
+# % answer: vector
+# % label: Create cloud mask as raster or vector map
+# %end
+
 # %flag
 # % key: r
 # % description: Reproject raster data using r.import if needed
@@ -248,6 +258,8 @@ def main():
         kwargs['metadata'] = options['metadata']
     if options["pattern_file"]:
         kwargs["pattern_file"] = options["pattern_file"]
+    if options["cloud_output"]:
+        kwargs["cloud_output"] = options["cloud_output"]
 
     kwargsstr = ""
     flagstr = ""
