@@ -148,6 +148,15 @@
 # %end
 
 # %option
+# % key: stvds_clouds
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Name of the output cloudmask space time vector dataset
+# % gisprompt: new,stds,stvds
+# %end
+
+# %option
 # % key: directory
 # % type: string
 # % required: no
@@ -200,6 +209,7 @@
 # % required: input_dir, start, s2names
 # % requires: -a, sen2cor_path
 # % requires: -e, s2names
+# % requires: stvds_clouds, -c
 # %end
 
 
@@ -576,11 +586,11 @@ def main():
         # remove registerfile
         grass.try_remove(registerfile)
 
-        if flags['c']:
-            stvdsclouds = strds + '_clouds'
+        if options["stvds_clouds"]:
+            stvdsclouds = options["stvds_clouds"]
             grass.run_command(
-                't.create', output=stvdsclouds, title="Sentinel-2 clouds",
-                desc="Sentinel-2 clouds", quiet=True, type='stvds')
+                't.create', output=stvdsclouds, title="Sentinel-2_sen2cor_clouds",
+                desc="Sentinel-2_sen2cor_clouds", quiet=True, type='stvds')
             registerfileclouds = grass.tempfile()
             fileclouds = open(registerfileclouds, 'w')
             for imp_clouds in cloudlist:
