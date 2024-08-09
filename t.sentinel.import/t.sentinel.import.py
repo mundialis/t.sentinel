@@ -152,7 +152,7 @@
 # % type: string
 # % required: no
 # % multiple: no
-# % description: Name of the output cloudmask space time vector dataset
+# % description: Name of the output cloudmask space time vector dataset. If not provided, it will be <strds_output>_clouds
 # % gisprompt: new,stds,stvds
 # %end
 
@@ -586,8 +586,11 @@ def main():
         # remove registerfile
         grass.try_remove(registerfile)
 
-        if options["stvds_clouds"]:
-            stvdsclouds = options["stvds_clouds"]
+        if flags["c"]:
+            if options["stvds_clouds"]:
+                stvdsclouds = options["stvds_clouds"]
+            else:
+                stvdsclouds = strds + '_clouds'
             grass.run_command(
                 't.create', output=stvdsclouds, title="Sentinel-2_sen2cor_clouds",
                 desc="Sentinel-2_sen2cor_clouds", quiet=True, type='stvds')
