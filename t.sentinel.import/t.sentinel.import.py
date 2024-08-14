@@ -153,7 +153,6 @@
 # % required: no
 # % multiple: no
 # % description: Name of the output cloudmask space time vector dataset. If not provided, it will be <strds_output>_clouds
-# % gisprompt: new,stds,stvds
 # %end
 
 # %option
@@ -162,7 +161,6 @@
 # % required: no
 # % multiple: no
 # % description: Name of the output cloudmask space time raster dataset. If not provided, it will be <strds_output>_clouds
-# % gisprompt: new,stds,stvds
 # %end
 
 # %option
