@@ -206,7 +206,7 @@
 # % key: offset
 # % type: integer
 # % required: no
-# % description: Offset to add to the Sentinel bands to due to specific processing baseline (e.g. -1000)
+# % description: Offset to add to the Sentinel-2 bands to due to specific processing baseline (e.g. -1000)
 # %end
 
 # %rules
@@ -490,9 +490,8 @@ def main():
             if options["extent"] == "region":
                 import_kwargs["region"] = currentregion
             if flags["c"]:
-                if options["stvds_clouds"]:
-                    import_kwargs["cloud_output"] = "vector"
-                elif options["strds_clouds"]:
+                import_kwargs["cloud_output"] = "vector"
+                if options["strds_clouds"]:
                     import_kwargs["cloud_output"] = "raster"
             if single_folders is True:
                 directory = os.path.join(download_dir, subfolder)
@@ -555,6 +554,7 @@ def main():
 
                     # calculate offset (metadata in cell_misc will be lost)
                     tmp_rast = f"rast_tmp_{os.getpid()}"
+                    # clipping to 0 to keep the value within the valid 0-10000 range
                     mapc_exp = (f"{tmp_rast} = if({rast} + {options['offset']} < 0, "
                                 f"0, {rast} + {options['offset']} )")
                     grass.run_command(f"r.mapcalc.tiled",
