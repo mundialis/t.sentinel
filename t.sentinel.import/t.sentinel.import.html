@@ -2,7 +2,15 @@
 
 <em>t.sentinel.import</em> is a GRASS GIS addon Python script to
 download and import the Sentinel-2 scenes and create a STRDS.
-
+<p>
+Since Sentinel-2 <a href="https://forum.step.esa.int/t/info-introduction-of-additional-radiometric-offset-in-pb04-00-products/35431">Processing Baseline 4.0.0</a>,
+a systematic offset has been introduced to all reflectance values.<br>
+To account for this, the <b>offset</b> option allows the user to
+indicate how reflectance data should be corrected (e.g. -1000).
+<p>
+When using the <em>-c</em> flag to import cloud masks, the user may define the type and name of the <br>
+  cloud STDS to be imported by the <em>stvds_clouds</em>/<em>strds_clouds</em> option. If only the
+<em>-c</em> flag is given, a cloud STVDS is imported and named <em>[strds_output]_clouds</em>
 <h2>EXAMPLE</h2>
 
 <div class="code"><pre>

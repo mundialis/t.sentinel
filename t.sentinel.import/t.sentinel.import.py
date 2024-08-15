@@ -148,6 +148,22 @@
 # %end
 
 # %option
+# % key: stvds_clouds
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Name of the output cloudmask space time vector dataset. If not provided, it will be <strds_output>_clouds
+# %end
+
+# %option
+# % key: strds_clouds
+# % type: string
+# % required: no
+# % multiple: no
+# % description: Name of the output cloudmask space time raster dataset. If not provided, it will be <strds_output>_clouds
+# %end
+
+# %option
 # % key: directory
 # % type: string
 # % required: no
@@ -186,6 +202,13 @@
 # % answer: 1
 # %end
 
+# %option
+# % key: offset
+# % type: integer
+# % required: no
+# % description: Offset to add to the Sentinel-2 bands to due to specific processing baseline (e.g. -1000)
+# %end
+
 # %rules
 # % collective: start, end, producttype
 # % excludes: s2names, start, end, producttype
@@ -193,6 +216,9 @@
 # % required: input_dir, start, s2names
 # % requires: -a, sen2cor_path
 # % requires: -e, s2names
+# % requires: stvds_clouds, -c
+# % requires: strds_clouds, -c
+# % exclusive: stvds_clouds, strds_clouds
 # %end
 
 
@@ -201,6 +227,7 @@ from datetime import date
 import multiprocessing as mp
 import os
 import re
+import shutil
 import sys
 
 import grass.script as grass
@@ -321,6 +348,11 @@ def main():
         grass.fatal(_("The 'i.zero2null' module was not found, install it first:") +
                     "\n" +
                     "g.extension i.zero2null")
+
+    if not grass.find_program('r.mapcalc.tiled', '--help'):
+        grass.fatal(_("The 'r.mapcalc.tiled' module was not found, install it first:") +
+                    "\n" +
+                    "g.extension r.mapcalc.tiled")
 
     # create temporary directory to download data
     if tmpdirectory:
@@ -457,6 +489,10 @@ def main():
             }
             if options["extent"] == "region":
                 import_kwargs["region"] = currentregion
+            if flags["c"]:
+                import_kwargs["cloud_output"] = "vector"
+                if options["strds_clouds"]:
+                    import_kwargs["cloud_output"] = "raster"
             if single_folders is True:
                 directory = os.path.join(download_dir, subfolder)
             else:
@@ -496,8 +532,42 @@ def main():
             cloudlist.append(vect)
             grass.run_command('g.copy', vector=vect + '@' + new_mapset + ',' + vect)
         for rast in grass.parse_command('g.list', type='raster', mapset=new_mapset):
-            maplist.append(rast)
-            grass.run_command('g.copy', raster=rast + '@' + new_mapset + ',' + rast)
+            grass.run_command('g.copy',
+                              raster=rast + '@' + new_mapset + ',' + rast)
+            if "CLOUDS" in rast:
+                cloudlist.append(rast)
+            else:
+                maplist.append(rast)
+
+                if options["offset"]:
+                    # save the description.json
+                    tmp_desc_dir = os.path.join(tmpdirectory, "descriptions_json")
+                    if not os.path.isdir(tmp_desc_dir):
+                        try:
+                            os.makedirs(tmp_desc_dir)
+                        except:
+                            grass.fatal(_(f"Unable to create directory {tmp_desc_dir}"))
+
+                    desc_file_save = os.path.join(tmp_desc_dir, f"{rast}_description.json")
+                    desc_file_in = os.path.join(json_standard_folder, rast, "description.json")
+                    shutil.copy(desc_file_in, desc_file_save)
+
+                    # calculate offset (metadata in cell_misc will be lost)
+                    tmp_rast = f"rast_tmp_{os.getpid()}"
+                    # clipping to 0 to keep the value within the valid 0-10000 range
+                    mapc_exp = (f"{tmp_rast} = if({rast} + {options['offset']} < 0, "
+                                f"0, {rast} + {options['offset']} )")
+                    grass.run_command(f"r.mapcalc.tiled",
+                                      expression=mapc_exp,
+                                      nprocs=nprocs_final,
+                                      quiet=True)
+                    grass.run_command("g.copy",
+                                      raster=f"{tmp_rast},{rast}",
+                                      overwrite=True,
+                                      quiet=True)
+                    # copy the description.json back
+                    shutil.copy(desc_file_save, desc_file_in)
+
         grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
     # space time dataset
     grass.message(_("Creating STRDS of Sentinel scenes ..."))
@@ -534,11 +604,20 @@ def main():
         # remove registerfile
         grass.try_remove(registerfile)
 
-        if flags['c']:
-            stvdsclouds = strds + '_clouds'
+        if flags["c"]:
+            dtype="vector"
+            stds_type = "stvds"
+            if options["strds_clouds"]:
+                stdsclouds = options["strds_clouds"]
+                dtype="raster"
+                stds_type = "strds"
+            elif options["stvds_clouds"]:
+                stdsclouds = options["stvds_clouds"]
+            else:
+                stdsclouds = strds + '_clouds'
             grass.run_command(
-                't.create', output=stvdsclouds, title="Sentinel-2 clouds",
-                desc="Sentinel-2 clouds", quiet=True, type='stvds')
+                't.create', output=stdsclouds, title="Sentinel-2_sen2cor_clouds",
+                desc="Sentinel-2_sen2cor_clouds", quiet=True, type=stds_type)
             registerfileclouds = grass.tempfile()
             fileclouds = open(registerfileclouds, 'w')
             for imp_clouds in cloudlist:
@@ -549,8 +628,8 @@ def main():
                 fileclouds.write("%s|%s %s\n" % (imp_clouds, date_str2, clock_str2))
             fileclouds.close()
             grass.run_command(
-                't.register', type='vector', input=stvdsclouds, file=registerfileclouds, quiet=True)
-            grass.message("<%s> is created" % (stvdsclouds))
+                't.register', type=dtype, input=stdsclouds, file=registerfileclouds, quiet=True)
+            grass.message("<%s> is created" % (stdsclouds))
             # remove registerfile
             grass.try_remove(registerfileclouds)
 
