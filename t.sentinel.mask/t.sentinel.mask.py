@@ -113,7 +113,6 @@ import multiprocessing as mp
 import grass.script as grass
 from grass.pygrass.modules import Module, ParallelModuleQueue
 
-
 # initialize global vars
 rm_regions = []
 rm_vectors = []
