@@ -1,0 +1,22 @@
+name: Linting and code quality check
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  lint:
+    uses: mundialis/github-workflows/.github/workflows/linting.yml@main
+    with:
+      pylint-version: '2.17.4'
+      VALIDATE_JAVASCRIPT_STANDARD: false
+      BASH_SEVERITY: 'warning'
+    # the workflow requires permissions that need to be granted by the parent job:
+    permissions:
+      contents: read
+      packages: read
+      # To report GitHub Actions status checks
+      statuses: write

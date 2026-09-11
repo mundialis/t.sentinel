@@ -121,6 +121,7 @@ rm_rasters = []
 
 
 def cleanup():
+    """ Cleanup function to remove temporary files and rasters. """
     nuldev = open(os.devnull, 'w')
     kwargs = {
         'flags': 'f',
@@ -142,6 +143,7 @@ def cleanup():
 
 
 def test_nprocs():
+    """ Test if nprocs is not larger than available CPUs. """
     # Test nprocs settings
     nprocs = int(options['nprocs'])
     nprocs_real = mp.cpu_count()
@@ -152,6 +154,10 @@ def test_nprocs():
 
 
 def main():
+    """
+    Creates a space time raster data set of cloud masks and shadow masks
+    by running i.sentinel.mask parallelized.
+    """
 
     global rm_regions, rm_rasters, rm_vectors, tmpfolder
 

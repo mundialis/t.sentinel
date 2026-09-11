@@ -246,6 +246,7 @@ tmpfolder = None
 
 
 def cleanup():
+    """ Cleanup function to remove temporary files and rasters. """
     nuldev = open(os.devnull, 'w')
     kwargs = {
         'flags': 'f',
@@ -269,6 +270,7 @@ def cleanup():
 
 
 def test_nprocs_memory():
+    """ Test nprocs and memory settings. """
     # Test nprocs settings
     nprocs = int(options['nprocs'])
     nprocs_real = mp.cpu_count()
@@ -317,6 +319,9 @@ def freeRAM(unit, percent=100):
 
 
 def main():
+    """
+    Downloads and imports multiple Sentinel-2 scenes in parallel and creates a STRDS.
+    """
 
     global rm_regions, rm_rasters, rm_vectors, tmpfolder
 

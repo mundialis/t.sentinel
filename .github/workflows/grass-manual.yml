@@ -7,3 +7,8 @@ on:
 jobs:
   grass-manual:
     uses: mundialis/github-workflows/.github/workflows/grass-manual.yml@main
+    # the workflow requires permissions that need to be granted by the parent job:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

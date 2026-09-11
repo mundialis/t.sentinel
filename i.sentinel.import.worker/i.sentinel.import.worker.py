@@ -149,6 +149,7 @@ rm_rasters = []
 
 
 def cleanup():
+    """ Cleanup function to remove temporary files and rasters. """
     grass.message(_("Cleaning up..."))
     nuldev = open(os.devnull, 'w')
     for rm_r in rm_rasters:
@@ -184,8 +185,12 @@ def freeRAM(unit, percent=100):
 
 
 def main():
+    """
+    Imports Sentinel-2 data into a new mapset, and optionally resamples bands to 10m.
+    """
 
     global rm_rasters
+    rm_rasters = []
 
     memory = int(options['memory'])
     input = options['input']

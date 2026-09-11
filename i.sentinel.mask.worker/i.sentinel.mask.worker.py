@@ -184,6 +184,9 @@ import grass.script as grass
 
 
 def main():
+    """
+    Runs i.sentinel.mask as a worker in different mapsets usually called by t.sentinel.mask.
+    """
 
     # check if we have i.sentinel.mask
     if not grass.find_program('i.sentinel.mask', '--help'):
