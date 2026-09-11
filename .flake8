@@ -1,0 +1,12 @@
+[flake8]
+
+# E402 module level import not at top of file
+# E501 line too long (83 > 79 characters)
+# F821 undefined name '_'
+
+exclude = .git
+
+max-line-length = 80
+
+per-file-ignores =
+   ./v.example.py: F821, E501

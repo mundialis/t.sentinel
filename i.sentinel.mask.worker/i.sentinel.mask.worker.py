@@ -184,57 +184,75 @@ import grass.script as grass
 
 
 def main():
+    """
+    Runs i.sentinel.mask as a worker in different mapsets usually called by t.sentinel.mask.
+    """
 
     # check if we have i.sentinel.mask
-    if not grass.find_program('i.sentinel.mask', '--help'):
-        grass.fatal(_("The 'i.sentinel.mask' module was not found, install it first:") +
-                    "\n" +
-                    "g.extension i.sentinel")
+    if not grass.find_program("i.sentinel.mask", "--help"):
+        grass.fatal(
+            _("The 'i.sentinel.mask' module was not found, install it first:")
+            + "\n"
+            + "g.extension i.sentinel"
+        )
 
     # set some common environmental variables, like:
-    os.environ.update(dict(GRASS_COMPRESS_NULLS='1',
-                           GRASS_COMPRESSOR='ZSTD',
-                           GRASS_MESSAGE_FORMAT='plain'))
+    os.environ.update(
+        dict(
+            GRASS_COMPRESS_NULLS="1",
+            GRASS_COMPRESSOR="ZSTD",
+            GRASS_MESSAGE_FORMAT="plain",
+        )
+    )
 
     # actual mapset, location, ...
     env = grass.gisenv()
-    gisdbase = env['GISDBASE']
-    location = env['LOCATION_NAME']
-    old_mapset = env['MAPSET']
+    gisdbase = env["GISDBASE"]
+    location = env["LOCATION_NAME"]
+    old_mapset = env["MAPSET"]
 
-    new_mapset = options['newmapset']
+    new_mapset = options["newmapset"]
     grass.message("New mapset: <%s>" % new_mapset)
     grass.utils.try_rmdir(os.path.join(gisdbase, location, new_mapset))
 
     # create a private GISRC file for each job
-    gisrc = os.environ['GISRC']
+    gisrc = os.environ["GISRC"]
     newgisrc = "%s_%s" % (gisrc, str(os.getpid()))
     grass.try_remove(newgisrc)
     shutil.copyfile(gisrc, newgisrc)
-    os.environ['GISRC'] = newgisrc
+    os.environ["GISRC"] = newgisrc
 
     ### change mapset
-    grass.message("GISRC: <%s>" % os.environ['GISRC'])
-    grass.run_command('g.mapset', flags='c', mapset=new_mapset)
+    grass.message("GISRC: <%s>" % os.environ["GISRC"])
+    grass.run_command("g.mapset", flags="c", mapset=new_mapset)
 
     ### import data
     grass.message(_("Running i.sentinel.mask ..."))
     kwargs = dict()
-    for opt,val in options.items():
-        if opt != 'newmapset' and val:
-            if opt in ['green', 'red', 'blue', 'nir', 'nir8a', 'swir11', 'swir12']:
-                valnew = val.split('@')[0]
-                grass.run_command('g.copy', raster="%s,%s" % (val,valnew), quiet=True)
+    for opt, val in options.items():
+        if opt != "newmapset" and val:
+            if opt in [
+                "green",
+                "red",
+                "blue",
+                "nir",
+                "nir8a",
+                "swir11",
+                "swir12",
+            ]:
+                valnew = val.split("@")[0]
+                grass.run_command(
+                    "g.copy", raster="%s,%s" % (val, valnew), quiet=True
+                )
                 kwargs[opt] = valnew
             else:
                 kwargs[opt] = val
-    flagstr = ''
-    for flag,val in flags.items():
+    flagstr = ""
+    for flag, val in flags.items():
         if val:
             flagstr += flag
-    grass.run_command('g.region', raster=kwargs['nir'])
-    grass.run_command('i.sentinel.mask', quiet=True,
-        flags=flagstr, **kwargs)
+    grass.run_command("g.region", raster=kwargs["nir"])
+    grass.run_command("i.sentinel.mask", quiet=True, flags=flagstr, **kwargs)
 
     grass.utils.try_remove(newgisrc)
     return 0
